@@ -5,7 +5,7 @@
 
 .SILENT:
 .ONESHELL:
-.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli
+.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli run_agent build_agent test_agent
 .DEFAULT_GOAL := help
 
 
@@ -163,6 +163,19 @@ ralph_clean:  ## Reset Ralph state (WARNING: removes prd.json and progress.txt)
 	read
 	rm -f docs/ralph/prd.json docs/ralph/progress.txt
 	echo "Ralph state cleaned. Run 'make ralph_init' to reinitialize."
+
+
+# MARK: agentbeats
+
+
+run_agent:  ## Start AgentBeats server. Usage: make run_agent or make run_agent ARGS="--port 8080"
+	PYTHONPATH=src uv run python -m agentbeats.server $(ARGS)
+
+build_agent:  ## Build AgentBeats Docker image
+	docker build -t green-agent .
+
+test_agent:  ## Run agentbeats tests
+	uv run pytest tests/
 
 
 # MARK: help

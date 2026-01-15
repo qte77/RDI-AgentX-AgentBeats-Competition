@@ -14,7 +14,7 @@ WORKDIR /app
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy dependency files first for layer caching
-COPY pyproject.toml ./
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies (production only)
 RUN uv sync --frozen --no-dev
