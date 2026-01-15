@@ -162,7 +162,7 @@ commit_story() {
 Completed by Ralph loop iteration.
 Passes quality checks: make validate
 
-Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>" || true
+Co-Authored-By: Claude <noreply@anthropic.com>" || true
 }
 
 # Main loop
