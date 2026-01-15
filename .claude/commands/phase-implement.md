@@ -16,22 +16,6 @@ Implement the plan following first-principles.
 
 If none found, prompt user for plan source.
 
-**MANDATORY:**
-
-- **KISS**: Simplest solution, no over-engineering, lowest complexity possible
-- **DRY**: Reuse existing patterns and implementation, no duplication
-- **Python Standards**: Follow @docs/best-practices/python-best-practices.md
-- **Project Compliance**: Follow @AGENTS.md and @CONTRIBUTING.md
-- **Reuse**: Leverage existing components/patterns/utilities from `src/app/`
-- **Scope**: Do NOT change/update/modify/extend code not related to the task
-- **Laser-focused**: Only necessary functionality, goal-oriented execution
-- **First Principles**: Break down into core concepts
-
-**Apply skills:**
-
-- @core-principles (MANDATORY for all tasks)
-- @implementing-python (Python coding standards)
-
 **Validation:**
 
 Before marking complete:
@@ -40,11 +24,10 @@ Before marking complete:
 make validate
 ```
 
-Must pass: ruff formatting, ruff linting, pyright type checking, pytest tests.
-
 **Ralph Loop (Autonomous Execution):**
 
-If `docs/ralph/prd.json` detected OR if "ralph" parameter provided run: `make ralph ITERATIONS=N`
+If `docs/ralph/prd.json` detected OR if "ralph" parameter provided run:
+`make ralph ITERATIONS=N`
 
 See `/phase-exec-planner` with "ralph" parameter for prd.json generation.
 

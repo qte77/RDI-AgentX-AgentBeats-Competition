@@ -11,7 +11,8 @@ Execute implementation phase planning with first-principles thinking.
 
 - Phase ID (e.g., "2I" or sprint section identifier)
 - Sprint plan path (e.g., `docs/sprints/YYYY-MM_Sprint#_Name.md`)
-- ralph (optional) - If provided, generate `docs/ralph/prd.json` for autonomous execution
+- ralph (optional) - If provided, generate `docs/ralph/prd.json` for
+  autonomous execution
 
 **Planning approach:**
 
@@ -20,17 +21,8 @@ Use Task tool with Plan subagent:
 ```text
 Plan implementation for phase {{arg1}} from {{arg2}}.
 
-**MANDATORY:**
-
-- **KISS**: Simplest solution, no over-engineering, lowest complexity possible
-- **DRY**: Reuse existing patterns and implementation, no duplication
-- **Python Standards**: Follow @docs/best-practices/python-best-practices.md
-- **Project Compliance**: Follow @AGENTS.md and @CONTRIBUTING.md
-- **Laser-focused**: Only modify in-scope files, only necessary code/functionality
-- **Goal-oriented**: Deliver working functionality without detours
-- **First Principles**: Break down into core concepts
-
-Extract phase context, analyze existing patterns, create focused implementation plan.
+Extract phase context, analyze existing patterns, create focused
+implementation plan.
 
 **Do NOT implement** - planning only.
 ```
@@ -67,14 +59,14 @@ Generate `docs/ralph/prd.json` for autonomous execution:
 
 **Output:** "Generated prd.json with N stories. Run: `make ralph ITERATIONS=N`"
 
-**Key references:**
+**Key skills:**
 
-- Apply @core-principles skill (KISS, DRY, YAGNI)
-- Follow @implementing-python skill for Python standards
-- Reference @designing-backend if architecture decisions needed
-- Use @reviewing-code after implementation
+- @implementing-python for Python implementation
+- @designing-backend for architecture decisions
+- @reviewing-code for code review
 
 **Output:**
 
 - Without "ralph" parameter: Detailed implementation plan (manual execution)
-- With "ralph" parameter: Plan + `docs/ralph/prd.json` (autonomous execution via `make ralph`)
+- With "ralph" parameter: Plan + `docs/ralph/prd.json` (autonomous execution
+  via `make ralph`)

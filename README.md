@@ -1,4 +1,9 @@
-# AgentBeats GreenAgent - Graph-Based Coordination Evaluator
+---
+title: Graph-Based Assessor - AgentBeats GreenAgent
+version: 1.0
+applies-to: humans
+purpose: Project overview and quick start guide
+---
 
 > Measure how, not just whether
 

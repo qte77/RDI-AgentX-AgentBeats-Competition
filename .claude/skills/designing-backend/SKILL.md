@@ -5,19 +5,8 @@ description: Designs concise, streamlined backend systems matching exact task re
 
 # Backend Architecture
 
-Creates **focused, streamlined** backend system designs matching stated requirements exactly. No over-engineering.
-
-## Core Principles
-
-**MANDATORY**: Always apply @core-principles skill first - User Experience, KISS, DRY, YAGNI, root-cause thinking.
-
-**MANDATORY COMPLIANCE**: Follow @AGENTS.md Agent Neutrality Requirements - extract from specified documents ONLY.
-
-- **Concise output**: Avoid verbose specifications or lengthy explanations
-- **Focused architecture**: Match complexity level (simple processing vs complex systems)
-- **Streamlined approach**: Existing patterns primary, complex architecture fallback only
-- **Design only**: No code implementation
-- **Requirement-driven**: Extract from specified documents, don't assume scope
+Creates **focused, streamlined** backend system designs matching stated
+requirements exactly. No over-engineering.
 
 ## Workflow
 
@@ -38,9 +27,3 @@ Creates **focused, streamlined** backend system designs matching stated requirem
 **Simple Tasks**: Single focused backend specification
 **Complex Tasks**: Multiple targeted architecture files
 **All outputs**: Concise, streamlined, no unnecessary complexity
-
-## References
-
-- See @AGENTS.md for mandatory compliance requirements
-- See @CONTRIBUTING.md for technical patterns
-- See @docs/architecture.md for system architecture context

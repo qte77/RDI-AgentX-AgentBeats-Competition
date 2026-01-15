@@ -5,13 +5,13 @@ description: Generates prd.json task tracking file from PRD.md requirements docu
 
 # PRD to JSON Conversion
 
-**MANDATORY**: Always apply @core-principles skill first - User Experience, KISS, DRY, YAGNI, root-cause thinking.
-
 Parses `docs/PRD.md` and generates `docs/ralph/prd.json` for Ralph loop task tracking.
 
 ## Purpose
 
-The Ralph loop requires a structured JSON file to track task completion. This skill extracts implementation stories from PRD.md and creates the required prd.json format.
+The Ralph loop requires a structured JSON file to track task completion. This
+skill extracts implementation stories from PRD.md and creates the required
+prd.json format.
 
 ## Workflow
 
@@ -120,9 +120,3 @@ To generate prd.json:
 ```
 
 Ralph loop will then use this file to track task completion.
-
-## References
-
-- See `docs/PRD.md` for source requirements
-- See `.claude/scripts/ralph/ralph.sh` for how prd.json is consumed
-- See @AGENTS.md for task granularity guidelines

@@ -4,7 +4,7 @@ You are executing a single story from the Ralph autonomous development loop.
 
 ## Critical Rules (Apply FIRST)
 
-- **MANDATORY**: Apply @core-principles skill - User Experience, KISS, DRY, YAGNI, root-cause thinking
+- **Core Principles**: Auto-applied via rules - KISS, DRY, YAGNI, user-centric
 - **MANDATORY**: Read and follow `AGENTS.md` compliance requirements
 - **One story only**: Complete the current story, don't start others
 - **Atomic changes**: Keep changes focused and minimal
@@ -30,6 +30,7 @@ You are executing a single story from the Ralph autonomous development loop.
 ## Available Skills
 
 You have access to these skills:
+
 - `designing-backend` - For architecture decisions
 - `implementing-python` - For Python code implementation
 - `reviewing-code` - For self-review before completion
@@ -45,6 +46,7 @@ make validate
 ```
 
 Must pass:
+
 - [ ] Code formatting (ruff)
 - [ ] Type checking (pyright)
 - [ ] All tests (pytest)
