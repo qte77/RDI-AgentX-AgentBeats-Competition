@@ -321,10 +321,13 @@
         "Leaderboard visible at agentbeats.dev showing baseline results"
       ],
       "files": [
-        "docs/PLATFORM_SETUP.md"
+        "docs/PLATFORM_SETUP.md",
+        "scripts/evaluate_purple_agent.py",
+        "docs/leaderboard_query.sql",
+        "docs/scenario.toml.example"
       ],
-      "passes": false,
-      "completed_at": null
+      "passes": true,
+      "completed_at": "2026-01-15T18:45:08Z"
     },
     {
       "id": "STORY-014",

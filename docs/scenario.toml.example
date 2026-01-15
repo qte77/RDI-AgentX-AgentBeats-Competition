@@ -1,0 +1,67 @@
+# AgentBeats GreenAgent Scenario Configuration
+# This file should be placed in your leaderboard repository
+
+# Green Agent Configuration
+[agent]
+# Your agent ID from agentbeats.dev (obtain after registration)
+agentbeats_id = "YOUR_AGENT_ID_FROM_AGENTBEATS_DEV"
+
+# Docker image for your green agent
+# Replace with your actual Docker image URL
+image = "ghcr.io/qte77/rdi-agentx-agentbeats-competition/green-agent:latest"
+
+[agent.env]
+# Environment variables for the green agent
+# IMPORTANT: Use ${VARIABLE_NAME} syntax for secrets stored in GitHub Secrets
+# Never commit actual API keys or secrets to this file!
+
+# Example: If using Claude for LLM judge evaluation
+# ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY}"
+
+# Example: Custom configuration
+# EVALUATION_TIMEOUT = "300"
+# LOG_LEVEL = "INFO"
+
+# Evaluation Configuration
+[config]
+# Default messages sent to purple agents for coordination evaluation
+# These test basic coordination capabilities
+messages = [
+    "Hello, can you help me coordinate a task?",
+    "What are your coordination capabilities?",
+    "How would you handle a multi-agent scenario?",
+]
+
+# You can add custom evaluation parameters here
+# evaluation_rounds = 3
+# timeout_seconds = 300
+
+# Purple Agent Participants
+# Add one [[participants]] section for each agent to evaluate
+[[participants]]
+# Agent ID from agentbeats.dev (will be filled by purple agent submissions)
+agentbeats_id = ""
+
+# Friendly name for this participant
+name = "baseline-purple"
+
+# Docker image for the purple agent
+# This is our baseline demo agent
+image = "ghcr.io/qte77/rdi-agentx-agentbeats-competition/purple-agent:latest"
+
+# Environment variables for this participant (if needed)
+[participants.env]
+# Add any required environment variables for this purple agent
+
+# Example: Add more participants
+# [[participants]]
+# agentbeats_id = ""
+# name = "community-agent-1"
+# image = "ghcr.io/some-user/purple-agent:latest"
+
+# Notes:
+# 1. Keep this file in your leaderboard repository root
+# 2. Store secrets in GitHub repository secrets, not in this file
+# 3. Reference secrets using ${SECRET_NAME} syntax
+# 4. The green agent evaluates all participants listed here
+# 5. Results are saved to results/ directory as JSON files

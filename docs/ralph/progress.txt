@@ -117,3 +117,13 @@ Story: STORY-011
 Status: PASS
 Notes: Completed successfully
 
+## Iteration 18 - Thu Jan 15 06:40:06 PM UTC 2026
+Story: STORY-012
+Status: PASS
+Notes: Completed successfully
+
+## Iteration 19 - Thu Jan 15 08:00:00 PM UTC 2026
+Story: STORY-013
+Status: PASS
+Notes: Completed successfully - Created comprehensive leaderboard documentation, evaluation script, DuckDB query, and scenario.toml template. Ready for deployment to agentbeats.dev
+
