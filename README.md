@@ -10,6 +10,13 @@ purpose: Project overview and quick start guide
 A GreenAgent for [AgentBeats competition](https://rdi.berkeley.edu/agentx-agentbeats.html)
 that evaluates **how agents coordinate**, not just whether they succeed.
 
+[![License](https://img.shields.io/badge/license-BSD3Clause-58f4c2.svg)](LICENSE.md)
+![Version](https://img.shields.io/badge/version-0.0.0-58f4c2.svg)
+[![CodeQL](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/codeql.yaml/badge.svg)](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/codeql.yaml)
+[![CodeFactor](https://www.codefactor.io/repository/github/qte77/RDI-AgentX-AgentBeats-Competition/badge)](https://www.codefactor.io/repository/github/qte77/RDI-AgentX-AgentBeats-Competition)
+[![ruff](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/ruff.yaml/badge.svg)](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/ruff.yaml)
+[![pytest](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/pytest.yaml/badge.svg)](https://github.com/qte77/RDI-AgentX-AgentBeats-Competition/actions/workflows/pytest.yaml)
+
 ## Novel Value
 
 Graph-based runtime coordination analysis - measuring collaboration quality
