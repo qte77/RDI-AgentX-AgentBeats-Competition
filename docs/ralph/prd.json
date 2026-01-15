@@ -290,8 +290,8 @@
       "files": [
         "examples/purple-agent/"
       ],
-      "passes": false,
-      "completed_at": null
+      "passes": true,
+      "completed_at": "2026-01-15T18:37:33Z"
     },
     {
       "id": "STORY-012",
