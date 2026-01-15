@@ -1,7 +1,7 @@
 ---
 title: AgentBeats Competition - Requirements Analysis
 version: 1.0
-applies-to: all-agents
+applies-to: Agents and humans
 purpose: Official competition requirements, compliance status, and execution strategy
 created: 2026-01-15
 ---

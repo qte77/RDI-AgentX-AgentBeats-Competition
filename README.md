@@ -1,7 +1,7 @@
 ---
 title: Graph-Based Assessor - AgentBeats GreenAgent
 version: 1.0
-applies-to: humans
+applies-to: Humans
 purpose: Project overview and quick start guide
 ---
 

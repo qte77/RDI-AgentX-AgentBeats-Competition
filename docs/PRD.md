@@ -1,7 +1,7 @@
 ---
 title: Product Requirements Document - AgentBeats GreenAgent (Assessor)
 version: 1.0
-applies-to: all-agents
+applies-to: Agents and humans
 purpose: Functional requirements and acceptance criteria for all user stories
 ---
 
