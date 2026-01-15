@@ -275,3 +275,68 @@ Create A2A-compatible demo agent for submission.
 - Simple coordination scenario demonstrable
 
 **Files:** examples/purple-agent/
+
+---
+
+### STORY-012: Register on AgentBeats platform
+
+Register GreenAgent on agentbeats.org developer platform.
+
+**Acceptance Criteria:**
+
+- Agent registered on <https://agentbeats.org>
+- Agent credentials/API tokens obtained (if applicable)
+- Agent metadata (name, description, repo URL) configured
+- Registration confirmation received
+
+**Files:** docs/PLATFORM_SETUP.md (new)
+
+---
+
+### STORY-013: Publish to leaderboard
+
+Create leaderboard repo and publish baseline evaluation results.
+
+**Reference:** [AgentBeats Leaderboard Tutorial](https://docs.agentbeats.dev/tutorial/)
+
+**Acceptance Criteria:**
+
+- GitHub leaderboard repo created from [official template](https://github.com/RDI-Foundation/leaderboard-template)
+- Repo URL added to registered green agent on agentbeats.dev
+- DuckDB query configured for result display
+- Baseline purple agent evaluated, results JSON submitted to leaderboard repo
+- Leaderboard visible at agentbeats.dev showing baseline results
+
+**Files:** docs/PLATFORM_SETUP.md, leaderboard repo (external)
+
+---
+
+### STORY-014: Document reproducibility
+
+Demonstrate consistent evaluation results across multiple runs.
+
+**Acceptance Criteria:**
+
+- Run same evaluation configuration 3+ times
+- Document results in `docs/REPRODUCIBILITY.md`
+- Show variance analysis (mean, std dev, range)
+- Results demonstrate consistency (low variance in key metrics)
+- Include timestamps, configurations, and raw outputs
+
+**Files:** docs/REPRODUCIBILITY.md (new)
+
+---
+
+### STORY-015: Create submission artifacts
+
+Create abstract and demo video for submission.
+
+**Acceptance Criteria:**
+
+- Abstract written (150-300 words) describing evaluation tasks
+- Demo video recorded (max 3 minutes)
+- Video demonstrates: agent startup, evaluation flow, results interpretation
+- Video uploaded and accessible (YouTube/Vimeo/etc)
+- Abstract and video links added to README.md
+
+**Files:** docs/ABSTRACT.md (new), README.md

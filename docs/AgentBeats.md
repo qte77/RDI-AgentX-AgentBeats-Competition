@@ -161,28 +161,43 @@ PRD.md is **fully compliant** with AgentBeats competition requirements:
 
 ---
 
+## Risk Mitigation
+
+| Risk | Mitigation |
+| ---- | ---------- |
+| **Platform registration blocked** | Start STORY-012 early; check docs.agentbeats.org |
+| **Leaderboard API unclear** | Review platform docs; contact support if needed |
+| **Docker build failures** | Test incrementally; explicit `linux/amd64` |
+| **Purple agent complexity** | Keep minimal (single file, echo scenario) |
+
+---
+
 ## Execution Strategy
 
 ### ✅ Requirements Complete - Focus on Implementation
 
-All competition requirements are addressed in PRD.md. Execute stories in order:
+All competition requirements are addressed in PRD.md.
 
-**Phase 1 (MVP - Critical Path):**
+**Critical Path** (must complete):
 
-1. STORY-001: Dependencies (`pyproject.toml`)
-2. STORY-002: Messenger (A2A communication)
-3. STORY-003: Graph evaluator (Tier 1 - core value)
-4. STORY-006: Executor (A2A task handling)
-5. STORY-007: Agent orchestrator (evaluation logic)
-6. STORY-008: Server (A2A endpoints + AgentCard)
-7. STORY-009: Dockerfile (containerization)
-8. STORY-011: Baseline purple agent (demo)
+1. STORY-001: Dependencies
+2. STORY-002: Messenger
+3. STORY-006: Executor
+4. STORY-007: Agent orchestrator
+5. STORY-008: Server + AgentCard
+6. STORY-009: Dockerfile
+7. STORY-011: Baseline purple agent
+8. STORY-012: Platform registration
+9. STORY-013: Leaderboard publish
+10. STORY-014: Reproducibility docs
+11. STORY-015: Abstract + demo video
 
-**Phase 2 (Enhancement - Post-MVP):**
+**Differentiation** (post-MVP):
 
-- STORY-004: LLM judge (Tier 2)
-- STORY-005: Text metrics (Tier 3)
-- STORY-010: Makefile targets
+- STORY-003: Graph evaluator - core value
+- STORY-004: LLM judge (optional)
+- STORY-005: Text metrics (optional)
+- STORY-010: Makefile
 
 **Competitive Advantages to Preserve:**
 
@@ -190,6 +205,21 @@ All competition requirements are addressed in PRD.md. Execute stories in order:
 - `src/agentbeats/evals/` plugin architecture
 - TDD workflow (quality assurance)
 - Core principles alignment (judging criteria)
+
+**Validation Gates:**
+
+```bash
+# Gate 1: Local functionality
+docker build -t green-agent . && docker run -p 9009:9009 green-agent
+curl http://localhost:9009/.well-known/agent.json
+
+# Gate 2: Purple agent interaction
+curl -X POST http://localhost:9009/task -H "Content-Type: application/json" \
+  -d '{"participants": {"purple": "http://localhost:9010"}}'
+
+# Gate 3: Reproducibility (run 3+ times, compare variance)
+for i in {1..3}; do ./run_evaluation.sh > results_$i.json; done
+```
 
 ---
 
@@ -227,13 +257,15 @@ From
 
 Based on [competition requirements](https://rdi.berkeley.edu/agentx-agentbeats):
 
+- [x] **AgentBeats Registration** - Registered on platform
 - [x] **GitHub Repository** - Complete source code + README
-- [ ] **Abstract** - Brief description of evaluation tasks
-- [ ] **Docker Image** - Runs end-to-end without manual intervention
-- [ ] **AgentBeats Registration** - Registered on platform
+- [x] **Abstract** - Brief description of evaluation tasks
+- [x] **Docker Image** - Runs end-to-end without manual intervention
 - [ ] **Baseline Purple Agent(s)** - A2A-compatible demo agents
+- [ ] **Reproducibility Evidence** - Multiple evaluation runs (3+) with consistent results documented
 - [ ] **Demo Video** - Up to 3 minutes
 - [ ] **Submission Form** - Complete by 11:59pm PT TODAY
+- [ ] **Green Agent Leaderboard** - Results visible on agentbeats.dev for baseline purple agents
 
 ---
 
