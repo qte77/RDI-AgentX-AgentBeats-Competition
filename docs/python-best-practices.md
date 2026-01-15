@@ -1,4 +1,9 @@
-# Python Best Practices Reference
+---
+title: Python Best Practices Reference
+version: 1.0
+applies-to: all-agents
+purpose: Python coding standards, type annotations, and testing guidelines
+---
 
 ## Code Style
 

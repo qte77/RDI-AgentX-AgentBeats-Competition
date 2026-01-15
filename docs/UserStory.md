@@ -1,4 +1,9 @@
-# User Story - AgentBeats GreenAgent
+---
+title: User Story - AgentBeats GreenAgent (Assessor)
+version: 1.0
+applies-to: all-agents
+purpose: Product vision, value proposition, and success metrics
+---
 
 ## As a benchmark creator
 

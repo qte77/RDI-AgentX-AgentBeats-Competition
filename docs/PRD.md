@@ -1,4 +1,9 @@
-# Product Requirements Document - AgentBeats GreenAgent
+---
+title: Product Requirements Document - AgentBeats GreenAgent (Assessor)
+version: 1.0
+applies-to: all-agents
+purpose: Functional requirements and acceptance criteria for all user stories
+---
 
 > See [UserStory.md](UserStory.md) for vision and value proposition.
 
@@ -186,6 +191,8 @@ Implement agent.py to pass tests.
 **Acceptance Criteria:**
 
 - `src/agentbeats/agent.py` exists
+- Agent starts with fresh state per assessment
+- Uses `task_id` to namespace temporary resources
 - `uv run pytest tests/test_agent.py` passes
 - `make type_check` passes
 
@@ -215,8 +222,10 @@ Implement server.py to pass tests.
 **Acceptance Criteria:**
 
 - `src/agentbeats/server.py` exists
+- Server accepts `--host`, `--port`, `--card-url` CLI args
+- AgentCard at `/.well-known/agent.json` contains: name, description, skills
 - `uv run pytest tests/test_server.py` passes
-- `curl localhost:9009/.well-known/agent.json` returns valid JSON
+- `curl localhost:9009/.well-known/agent.json` returns A2A-compliant JSON
 
 **Files:** src/agentbeats/server.py
 
@@ -229,6 +238,8 @@ Create container for AgentBeats deployment.
 **Acceptance Criteria:**
 
 - `Dockerfile` exists at project root
+- Build targets `linux/amd64` architecture
+- ENTRYPOINT accepts `--host`, `--port`, `--card-url` args
 - `docker build -t green-agent .` succeeds
 - `docker run -p 9009:9009 green-agent` responds to agent card request
 
@@ -248,3 +259,19 @@ Add convenience targets for development.
 - All targets work without errors
 
 **Files:** Makefile
+
+---
+
+### STORY-011: Create baseline purple agent
+
+Create A2A-compatible demo agent for submission.
+
+**Acceptance Criteria:**
+
+- `examples/purple-agent/` directory exists
+- Purple agent exposes A2A endpoints
+- Purple agent can be evaluated by GreenAgent
+- `docker build -t purple-agent examples/purple-agent` succeeds
+- Simple coordination scenario demonstrable
+
+**Files:** examples/purple-agent/
