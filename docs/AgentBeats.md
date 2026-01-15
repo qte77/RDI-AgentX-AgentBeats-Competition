@@ -195,9 +195,9 @@ All competition requirements are addressed in PRD.md.
 **Differentiation** (post-MVP):
 
 - STORY-003: Graph evaluator - core value
-- STORY-010: Makefile
 - STORY-004: LLM judge (optional)
 - STORY-005: Text metrics (optional)
+- STORY-010: Makefile
 
 **Competitive Advantages to Preserve:**
 
@@ -259,8 +259,8 @@ Based on [competition requirements](https://rdi.berkeley.edu/agentx-agentbeats):
 
 - [x] **AgentBeats Registration** - Registered on platform
 - [x] **GitHub Repository** - Complete source code + README
-- [ ] **Abstract** - Brief description of evaluation tasks
-- [ ] **Docker Image** - Runs end-to-end without manual intervention
+- [x] **Abstract** - Brief description of evaluation tasks
+- [x] **Docker Image** - Runs end-to-end without manual intervention
 - [ ] **Baseline Purple Agent(s)** - A2A-compatible demo agents
 - [ ] **Reproducibility Evidence** - Multiple evaluation runs (3+) with consistent results documented
 - [ ] **Demo Video** - Up to 3 minutes

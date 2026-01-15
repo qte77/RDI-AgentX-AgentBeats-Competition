@@ -5,7 +5,7 @@
 
 .SILENT:
 .ONESHELL:
-.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli run_agent build_agent test_agent
+.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli
 .DEFAULT_GOAL := help
 
 
