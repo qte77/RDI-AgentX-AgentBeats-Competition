@@ -1,0 +1,156 @@
+{
+  "test_timestamp": "2026-01-15T18:46:59.895428+00:00",
+  "agent_url": "http://localhost:9010",
+  "num_runs": 5,
+  "successful_runs": 5,
+  "failed_runs": 0,
+  "all_runs": [
+    {
+      "run_number": 1,
+      "status": "completed",
+      "duration_seconds": 0.1951441764831543,
+      "task_id": "task-bc510466-59b1-4c7f-bfd9-d4874e607bdc",
+      "graph_node_count": 2,
+      "graph_edge_count": 1,
+      "graph_avg_centrality": 0.0,
+      "coordination_quality_score": 0.0,
+      "response_similarity_score": 1.0
+    },
+    {
+      "run_number": 2,
+      "status": "completed",
+      "duration_seconds": 0.038457393646240234,
+      "task_id": "task-69ca0775-f900-4513-846d-e180115f819d",
+      "graph_node_count": 2,
+      "graph_edge_count": 1,
+      "graph_avg_centrality": 0.0,
+      "coordination_quality_score": 0.0,
+      "response_similarity_score": 1.0
+    },
+    {
+      "run_number": 3,
+      "status": "completed",
+      "duration_seconds": 0.06181597709655762,
+      "task_id": "task-7cc609c6-be3f-4115-83d9-af6f12998582",
+      "graph_node_count": 2,
+      "graph_edge_count": 1,
+      "graph_avg_centrality": 0.0,
+      "coordination_quality_score": 0.0,
+      "response_similarity_score": 1.0
+    },
+    {
+      "run_number": 4,
+      "status": "completed",
+      "duration_seconds": 0.04915308952331543,
+      "task_id": "task-7d24e6b0-7a67-480c-b373-aa24ea3f8429",
+      "graph_node_count": 2,
+      "graph_edge_count": 1,
+      "graph_avg_centrality": 0.0,
+      "coordination_quality_score": 0.0,
+      "response_similarity_score": 1.0
+    },
+    {
+      "run_number": 5,
+      "status": "completed",
+      "duration_seconds": 0.030548810958862305,
+      "task_id": "task-82cb6fdd-8425-42a0-929d-3d9a43de1030",
+      "graph_node_count": 2,
+      "graph_edge_count": 1,
+      "graph_avg_centrality": 0.0,
+      "coordination_quality_score": 0.0,
+      "response_similarity_score": 1.0
+    }
+  ],
+  "variance_analysis": {
+    "duration_seconds": {
+      "mean": 0.07502388954162598,
+      "stdev": 0.06816848945199933,
+      "min": 0.030548810958862305,
+      "max": 0.1951441764831543,
+      "range": 0.164595365524292,
+      "num_samples": 5,
+      "values": [
+        0.1951441764831543,
+        0.038457393646240234,
+        0.06181597709655762,
+        0.04915308952331543,
+        0.030548810958862305
+      ]
+    },
+    "graph_node_count": {
+      "mean": 2,
+      "stdev": 0.0,
+      "min": 2,
+      "max": 2,
+      "range": 0,
+      "num_samples": 5,
+      "values": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    "graph_edge_count": {
+      "mean": 1,
+      "stdev": 0.0,
+      "min": 1,
+      "max": 1,
+      "range": 0,
+      "num_samples": 5,
+      "values": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "graph_avg_centrality": {
+      "mean": 0.0,
+      "stdev": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "range": 0.0,
+      "num_samples": 5,
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "coordination_quality_score": {
+      "mean": 0.0,
+      "stdev": 0.0,
+      "min": 0.0,
+      "max": 0.0,
+      "range": 0.0,
+      "num_samples": 5,
+      "values": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "response_similarity_score": {
+      "mean": 1.0,
+      "stdev": 0.0,
+      "min": 1.0,
+      "max": 1.0,
+      "range": 0.0,
+      "num_samples": 5,
+      "values": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  }
+}
