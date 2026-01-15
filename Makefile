@@ -5,7 +5,12 @@
 
 .SILENT:
 .ONESHELL:
-.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli
+.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli \
+        ruff test_all coverage_all type_check validate quick_validate \
+        setup_opik setup_opik_env start_opik stop_opik clean_opik status_opik \
+        ralph_init ralph ralph_status ralph_clean \
+        run_agent build_agent test_agent \
+        help
 .DEFAULT_GOAL := help
 
 
