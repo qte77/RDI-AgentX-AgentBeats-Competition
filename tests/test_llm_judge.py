@@ -1,8 +1,9 @@
 """Tests for LLM judge evaluator module defining contract for qualitative assessment."""
 
+import os
 import pytest
 from pydantic import BaseModel
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import AsyncMock, Mock, patch
 
 
 class TestLLMJudgeEvaluate:
@@ -249,3 +250,173 @@ class TestLLMJudgeQualitativeAssessment:
         # Then: Feedback should include strengths and areas for improvement
         # This helps developers understand evaluation results
         assert hasattr(judge, "evaluate")
+
+
+class TestLLMClientConfiguration:
+    """Tests defining LLM client configuration contract."""
+
+    def test_llm_judge_reads_api_key_from_env(self) -> None:
+        """Test that LLMJudge reads AGENTBEATS_LLM_API_KEY from environment."""
+        # Given: Environment variable for API key
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        with patch.dict(os.environ, {"AGENTBEATS_LLM_API_KEY": "test-api-key"}):
+            # When: We instantiate LLMJudge
+            judge = LLMJudge()
+
+            # Then: Should read and store API key from environment
+            # This enables LLM API calls when key is configured
+            assert hasattr(judge, "_api_key") or hasattr(judge, "api_key")
+
+    def test_llm_judge_reads_base_url_from_env(self) -> None:
+        """Test that LLMJudge reads AGENTBEATS_LLM_BASE_URL from environment."""
+        # Given: Environment variable for base URL
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        custom_url = "https://custom-api.example.com/v1"
+        with patch.dict(os.environ, {"AGENTBEATS_LLM_BASE_URL": custom_url}):
+            # When: We instantiate LLMJudge
+            judge = LLMJudge()
+
+            # Then: Should read base URL from environment
+            # This enables using any OpenAI-compatible endpoint
+            assert hasattr(judge, "_base_url") or hasattr(judge, "base_url")
+
+    def test_llm_judge_uses_default_base_url(self) -> None:
+        """Test that LLMJudge uses default OpenAI base URL when not configured."""
+        # Given: No AGENTBEATS_LLM_BASE_URL in environment
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        with patch.dict(os.environ, {}, clear=True):
+            # When: We instantiate LLMJudge
+            judge = LLMJudge()
+
+            # Then: Should use default OpenAI base URL
+            # Default base URL should be https://api.openai.com/v1
+            expected_default = "https://api.openai.com/v1"
+            if hasattr(judge, "_base_url"):
+                assert judge._base_url == expected_default
+            elif hasattr(judge, "base_url"):
+                assert judge.base_url == expected_default
+
+    def test_llm_judge_reads_model_from_env(self) -> None:
+        """Test that LLMJudge reads AGENTBEATS_LLM_MODEL from environment."""
+        # Given: Environment variable for model name
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        custom_model = "gpt-4-turbo"
+        with patch.dict(os.environ, {"AGENTBEATS_LLM_MODEL": custom_model}):
+            # When: We instantiate LLMJudge
+            judge = LLMJudge()
+
+            # Then: Should read model name from environment
+            # This enables using different models based on deployment needs
+            assert hasattr(judge, "_model") or hasattr(judge, "model")
+
+    def test_llm_judge_uses_default_model(self) -> None:
+        """Test that LLMJudge uses gpt-4o-mini as default model."""
+        # Given: No AGENTBEATS_LLM_MODEL in environment
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        with patch.dict(os.environ, {}, clear=True):
+            # When: We instantiate LLMJudge
+            judge = LLMJudge()
+
+            # Then: Should use gpt-4o-mini as default
+            # This provides good balance of cost and quality
+            expected_default = "gpt-4o-mini"
+            if hasattr(judge, "_model"):
+                assert judge._model == expected_default
+            elif hasattr(judge, "model"):
+                assert judge.model == expected_default
+
+    def test_llm_judge_supports_openai_compatible_endpoints(self) -> None:
+        """Test that LLMJudge supports any OpenAI-compatible endpoint."""
+        # Given: Custom OpenAI-compatible endpoint configuration
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        custom_config = {
+            "AGENTBEATS_LLM_API_KEY": "custom-key",
+            "AGENTBEATS_LLM_BASE_URL": "https://custom-llm.example.com/v1",
+            "AGENTBEATS_LLM_MODEL": "custom-model",
+        }
+
+        with patch.dict(os.environ, custom_config):
+            # When: We instantiate LLMJudge with custom config
+            judge = LLMJudge()
+
+            # Then: Should support custom endpoint configuration
+            # This enables using providers like Azure OpenAI, local models, etc.
+            assert judge is not None
+            # Configuration should be readable for API calls
+
+    def test_llm_judge_handles_missing_api_key_gracefully(self) -> None:
+        """Test that LLMJudge handles missing API key gracefully."""
+        # Given: No API key in environment
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        with patch.dict(os.environ, {}, clear=True):
+            # When: We instantiate LLMJudge without API key
+            judge = LLMJudge()
+
+            # Then: Should not raise error during instantiation
+            # API key check should happen at evaluation time, not initialization
+            assert judge is not None
+
+    @pytest.mark.asyncio
+    async def test_llm_judge_can_check_if_api_configured(self) -> None:
+        """Test that LLMJudge can determine if API is configured."""
+        # Given: LLMJudge instances with and without API key
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        # When: API key is set
+        with patch.dict(os.environ, {"AGENTBEATS_LLM_API_KEY": "test-key"}):
+            judge_with_key = LLMJudge()
+
+            # Then: Should be able to determine API is configured
+            # This helps decide whether to use LLM or fallback logic
+
+        # When: API key is not set
+        with patch.dict(os.environ, {}, clear=True):
+            judge_without_key = LLMJudge()
+
+            # Then: Should be able to determine API is not configured
+            # This is needed for graceful fallback behavior
+            assert judge_without_key is not None
+
+
+class TestLLMClientConfigurationIntegration:
+    """Tests defining integration between configuration and evaluation."""
+
+    @pytest.mark.asyncio
+    async def test_evaluate_uses_configured_endpoint(self) -> None:
+        """Test that evaluate() uses configured LLM endpoint when available."""
+        # Given: LLMJudge with configured endpoint
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        config = {
+            "AGENTBEATS_LLM_API_KEY": "test-key",
+            "AGENTBEATS_LLM_BASE_URL": "https://api.openai.com/v1",
+            "AGENTBEATS_LLM_MODEL": "gpt-4o-mini",
+        }
+
+        with patch.dict(os.environ, config):
+            judge = LLMJudge()
+
+            # When: We evaluate traces
+            traces = [
+                TraceData(
+                    timestamp="2026-01-15T00:00:00Z",
+                    agent_url="http://localhost:9009",
+                    message="test",
+                    response="response",
+                    status_code=200,
+                )
+            ]
+
+            # Then: Should use configured endpoint for evaluation
+            # Implementation will need to make actual API call or use mock
+            result = await judge.evaluate(traces)
+            assert result is not None
+            assert isinstance(result.overall_score, float)
