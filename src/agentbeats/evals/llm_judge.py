@@ -29,6 +29,59 @@ class LLMJudge:
         self._base_url = os.environ.get("AGENTBEATS_LLM_BASE_URL", "https://api.openai.com/v1")
         self._model = os.environ.get("AGENTBEATS_LLM_MODEL", "gpt-4o-mini")
 
+    def _build_prompt(self, traces: list[TraceData]) -> str:
+        """Build evaluation prompt from trace data.
+
+        Args:
+            traces: List of TraceData objects to serialize into prompt
+
+        Returns:
+            Prompt string for LLM evaluation
+        """
+        # Serialize trace data into readable format
+        trace_lines: list[str] = []
+        for i, trace in enumerate(traces, 1):
+            trace_lines.append(f"Interaction {i}:")
+            trace_lines.append(f"  Timestamp: {trace.timestamp}")
+            trace_lines.append(f"  Agent URL: {trace.agent_url}")
+            trace_lines.append(f"  Message: {trace.message}")
+            trace_lines.append(f"  Response: {trace.response}")
+            trace_lines.append(f"  Status Code: {trace.status_code}")
+            if trace.error:
+                trace_lines.append(f"  Error: {trace.error}")
+            if trace.task_id:
+                trace_lines.append(f"  Task ID: {trace.task_id}")
+            trace_lines.append("")
+
+        trace_data = "\n".join(trace_lines)
+
+        # Build prompt with clear evaluation criteria
+        prompt = f"""You are evaluating agent coordination quality based on interaction traces.
+
+Agent Interaction Traces:
+{trace_data}
+
+Please evaluate the coordination quality and provide your assessment in JSON format with the following fields:
+
+{{
+  "overall_score": <float between 0 and 1>,
+  "reasoning": "<detailed explanation of your assessment>",
+  "coordination_quality": "<qualitative description: Excellent/Good/Fair/Poor>",
+  "strengths": ["<strength 1>", "<strength 2>", ...],
+  "weaknesses": ["<weakness 1>", "<weakness 2>", ...]
+}}
+
+Evaluation Criteria:
+- Communication clarity: Are messages and responses clear and well-formed?
+- Coordination effectiveness: Do agents coordinate smoothly or encounter issues?
+- Error handling: How well do agents handle errors and failures?
+- Response quality: Are responses appropriate and complete?
+- Overall performance: Success rate, consistency, and reliability
+
+Provide your assessment as valid JSON matching the schema above."""
+
+        return prompt
+
     async def evaluate(self, traces: list[TraceData]) -> LLMJudgment:
         """Evaluate agent coordination quality from traces using LLM judgment.
 
