@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 from pydantic import BaseModel
 
 from agentbeats.messenger import TraceData
@@ -22,7 +24,10 @@ class LLMJudge:
 
     def __init__(self) -> None:
         """Initialize LLM judge evaluator."""
-        pass
+        # Read configuration from environment variables
+        self._api_key = os.environ.get("AGENTBEATS_LLM_API_KEY")
+        self._base_url = os.environ.get("AGENTBEATS_LLM_BASE_URL", "https://api.openai.com/v1")
+        self._model = os.environ.get("AGENTBEATS_LLM_MODEL", "gpt-4o-mini")
 
     async def evaluate(self, traces: list[TraceData]) -> LLMJudgment:
         """Evaluate agent coordination quality from traces using LLM judgment.
