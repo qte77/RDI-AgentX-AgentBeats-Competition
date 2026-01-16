@@ -101,6 +101,7 @@ class TraceData(BaseModel):
     response: str
     status_code: int | None = None
     error: str | None = None
+    task_id: str | None = None
 
 
 class TestMessengerTraceStructure:
@@ -416,5 +417,180 @@ class TestA2ASDKIntegration:
                 mock_factory.connect.assert_any_call(agent_url1)
                 mock_factory.connect.assert_any_call(agent_url2)
             except (AttributeError, TypeError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+
+class TestTraceDataTaskIdField:
+    """Tests defining TraceData task_id field requirement."""
+
+    def test_implementation_trace_data_has_task_id_field(self) -> None:
+        """Test that implementation TraceData model has task_id field."""
+        # Given: Importing TraceData from implementation
+        from agentbeats.messenger import TraceData as ImplTraceData
+
+        # Then: TraceData should have task_id field in model_fields
+        assert "task_id" in ImplTraceData.model_fields, "TraceData must have task_id field"
+
+        # And: Should be able to create instance with task_id
+        trace = ImplTraceData(
+            timestamp="2026-01-16T00:00:00Z",
+            agent_url="http://localhost:9009",
+            message="test message",
+            response="test response",
+            status_code=200,
+            task_id="task-123",
+        )
+        assert trace.task_id == "task-123"
+
+    def test_trace_data_has_task_id_field(self) -> None:
+        """Test that TraceData model has task_id field."""
+        # Given: A TraceData instance with task_id
+        trace = TraceData(
+            timestamp="2026-01-16T00:00:00Z",
+            agent_url="http://localhost:9009",
+            message="test message",
+            response="test response",
+            status_code=200,
+            task_id="task-123",
+        )
+
+        # Then: task_id should be accessible
+        assert trace.task_id == "task-123"
+
+    def test_trace_data_task_id_is_optional(self) -> None:
+        """Test that TraceData task_id field is optional with None default."""
+        # Given: A TraceData instance without task_id
+        trace = TraceData(
+            timestamp="2026-01-16T00:00:00Z",
+            agent_url="http://localhost:9009",
+            message="test message",
+            response="test response",
+            status_code=200,
+        )
+
+        # Then: task_id should default to None
+        assert trace.task_id is None
+
+    def test_trace_data_preserves_existing_fields(self) -> None:
+        """Test that TraceData preserves all existing fields when task_id is added."""
+        # Given: A TraceData instance with all fields including task_id
+        trace = TraceData(
+            timestamp="2026-01-16T00:00:00Z",
+            agent_url="http://localhost:9009",
+            message="test message",
+            response="test response",
+            status_code=200,
+            error="some error",
+            task_id="task-456",
+        )
+
+        # Then: All fields should be preserved
+        assert trace.timestamp == "2026-01-16T00:00:00Z"
+        assert trace.agent_url == "http://localhost:9009"
+        assert trace.message == "test message"
+        assert trace.response == "test response"
+        assert trace.status_code == 200
+        assert trace.error == "some error"
+        assert trace.task_id == "task-456"
+
+    @pytest.mark.asyncio
+    async def test_talk_to_agent_captures_task_id_in_trace(self) -> None:
+        """Test that talk_to_agent() captures task.id from A2A Task object in TraceData."""
+        # Given: A messenger instance and mocked A2A SDK with task.id
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message = "test message"
+        expected_task_id = "task-abc-123"
+
+        # When/Then: Should capture task.id in trace data
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = expected_task_id  # Task has an id attribute
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response from agent"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation captures task.id
+            try:
+                await messenger.talk_to_agent(agent_url, message)
+
+                # Verify trace was captured with task_id
+                traces = messenger.get_traces()
+                assert len(traces) == 1
+                assert traces[0].task_id == expected_task_id
+                assert traces[0].agent_url == agent_url
+                assert traces[0].message == message
+                assert traces[0].response == "response from agent"
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_talk_to_agent_handles_missing_task_id(self) -> None:
+        """Test that talk_to_agent() handles missing task.id gracefully."""
+        # Given: A messenger instance and mocked A2A SDK without task.id
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message = "test message"
+
+        # When/Then: Should handle missing task.id by setting to None
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            # Mock task without id attribute
+            del mock_task.id
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response from agent"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation handles missing task.id
+            try:
+                await messenger.talk_to_agent(agent_url, message)
+
+                # Verify trace was captured with task_id = None
+                traces = messenger.get_traces()
+                assert len(traces) == 1
+                assert traces[0].task_id is None
+            except (AttributeError, AssertionError):
                 # Expected to fail - implementation not yet updated
                 pass
