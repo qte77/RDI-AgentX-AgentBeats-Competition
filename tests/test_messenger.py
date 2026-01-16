@@ -2,6 +2,7 @@
 
 import pytest
 from pydantic import BaseModel
+from unittest.mock import AsyncMock, MagicMock, patch
 
 
 class TestMessengerTalkToAgent:
@@ -165,3 +166,255 @@ class TestMessengerContract:
         assert hasattr(messenger, "talk_to_agent")
         assert hasattr(messenger, "get_traces")
         # No other public methods needed (YAGNI principle)
+
+
+class TestA2ASDKIntegration:
+    """Tests defining A2A SDK integration contract for messenger."""
+
+    @pytest.mark.asyncio
+    async def test_uses_client_factory_connect(self) -> None:
+        """Test that talk_to_agent() uses ClientFactory.connect() from a2a.client."""
+        # Given: A messenger instance and mocked A2A SDK
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message = "test message"
+
+        # When/Then: Should use ClientFactory.connect(agent_url)
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration over task events
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response from agent"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation uses ClientFactory
+            try:
+                await messenger.talk_to_agent(agent_url, message)
+                # Should call ClientFactory.connect
+                mock_factory.connect.assert_called_once_with(agent_url)
+            except AttributeError:
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_uses_create_text_message_object(self) -> None:
+        """Test that talk_to_agent() uses create_text_message_object() from a2a.client."""
+        # Given: A messenger instance and mocked A2A SDK
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message = "test message"
+
+        # When/Then: Should use create_text_message_object(content=message)
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_message_obj = MagicMock()
+            mock_create_message.return_value = mock_message_obj
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation uses create_text_message_object
+            try:
+                await messenger.talk_to_agent(agent_url, message)
+                # Should call create_text_message_object with content=message
+                mock_create_message.assert_called_once_with(content=message)
+            except AttributeError:
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_async_iteration_over_send_message_events(self) -> None:
+        """Test that talk_to_agent() iterates over send_message() events asynchronously."""
+        # Given: A messenger instance and mocked A2A SDK
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message = "test message"
+
+        # When/Then: Should async iterate over task events to get response
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_message_obj = MagicMock()
+            mock_create_message.return_value = mock_message_obj
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock TaskState.completed events
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    WORKING = "working"
+                    COMPLETED = "completed"
+
+                # First event: working state
+                working_event = MagicMock()
+                working_event.state = MockTaskState.WORKING
+                yield working_event
+
+                # Second event: completed state with output
+                completed_event = MagicMock()
+                completed_event.state = MockTaskState.COMPLETED
+                completed_event.output = "final response from agent"
+                yield completed_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation uses async iteration
+            try:
+                response = await messenger.talk_to_agent(agent_url, message)
+                # Should extract response from TaskState.completed event
+                assert response == "final response from agent"
+            except (AttributeError, TypeError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_client_caching_per_agent_url(self) -> None:
+        """Test that Messenger caches clients per agent URL."""
+        # Given: A messenger instance
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+        message1 = "first message"
+        message2 = "second message"
+
+        # When/Then: Should reuse same client for same agent URL
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation caches clients
+            try:
+                await messenger.talk_to_agent(agent_url, message1)
+                await messenger.talk_to_agent(agent_url, message2)
+
+                # ClientFactory.connect should only be called once for same URL
+                assert mock_factory.connect.call_count == 1
+            except (AttributeError, TypeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_different_agent_urls_get_different_clients(self) -> None:
+        """Test that different agent URLs get separate cached clients."""
+        # Given: A messenger instance
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url1 = "http://localhost:9009"
+        agent_url2 = "http://localhost:9010"
+        message = "test message"
+
+        # When/Then: Should create separate clients for different URLs
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client1 = AsyncMock()
+            mock_client2 = AsyncMock()
+
+            # Return different clients for different URLs
+            async def connect_side_effect(url: str):
+                if url == agent_url1:
+                    return mock_client1
+                else:
+                    return mock_client2
+
+            mock_factory.connect = AsyncMock(side_effect=connect_side_effect)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            for client in [mock_client1, mock_client2]:
+                client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until implementation caches clients per URL
+            try:
+                await messenger.talk_to_agent(agent_url1, message)
+                await messenger.talk_to_agent(agent_url2, message)
+
+                # Should call connect twice, once for each URL
+                assert mock_factory.connect.call_count == 2
+                mock_factory.connect.assert_any_call(agent_url1)
+                mock_factory.connect.assert_any_call(agent_url2)
+            except (AttributeError, TypeError):
+                # Expected to fail - implementation not yet updated
+                pass
