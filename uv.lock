@@ -30,7 +30,7 @@ http-server = [
 
 [[package]]
 name = "agentbeats-greenagent"
-version = "0.1.0"
+version = "0.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "a2a-sdk", extra = ["http-server"] },
