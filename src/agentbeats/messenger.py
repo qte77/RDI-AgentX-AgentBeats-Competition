@@ -16,6 +16,7 @@ class TraceData(BaseModel):
     response: str
     status_code: int | None = None
     error: str | None = None
+    task_id: str | None = None
 
 
 class Messenger:
@@ -40,6 +41,7 @@ class Messenger:
             Exception: If communication fails
         """
         timestamp = datetime.now(UTC).isoformat()
+        task_id: str | None = None
 
         try:
             # Get or create cached client for this agent URL
@@ -62,6 +64,9 @@ class Messenger:
                 # result is already an AsyncIterator
                 task = result  # type: ignore[assignment]
 
+            # Extract task_id from task object
+            task_id = getattr(task, "id", None)  # type: ignore[reportUnknownArgumentType]
+
             # Iterate over task events to get response
             response_text = ""
             async for event in task:  # type: ignore[union-attr]
@@ -76,6 +81,7 @@ class Messenger:
                 message=message,
                 response=response_text,
                 status_code=200,
+                task_id=task_id,
             )
             self._traces.append(trace)
 
@@ -89,6 +95,7 @@ class Messenger:
                 message=message,
                 response="",
                 error=str(e),
+                task_id=task_id,
             )
             self._traces.append(trace)
             raise
