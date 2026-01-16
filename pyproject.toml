@@ -87,7 +87,7 @@ markers = [
 
 [tool.coverage.run]
 include = [
-    "tests/**/*.py",
+    "src/**/*.py",
 ]
 # omit = []
 # branch = true
