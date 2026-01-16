@@ -36,6 +36,19 @@ Purple Agents → A2A Request → GreenAgent
 
 ## Quick Start
 
+### Option 1: Run from GHCR (no build needed)
+
+```bash
+# Pull and run GraphJudge container
+docker pull ghcr.io/qte77/agentbeats-greenagent:latest
+docker run -p 9009:9009 ghcr.io/qte77/agentbeats-greenagent:latest
+
+# Test (new terminal)
+curl localhost:9009/.well-known/agent.json
+```
+
+### Option 2: Local development
+
 ```bash
 # Install dependencies
 uv sync
@@ -91,13 +104,22 @@ make ralph_status
 
 ### Abstract
 
-GreenAgent is a novel evaluation framework that measures **how agents coordinate**, not just whether they succeed. The system combines graph-based structural analysis (NetworkX metrics), LLM-as-judge assessment, and text similarity scoring to provide comprehensive multi-tier evaluation of agent coordination quality. Through A2A-compliant trace capture and directed graph analysis, GreenAgent reveals coordination patterns, bottlenecks, and collaboration effectiveness. We demonstrate perfect reproducibility (0% variance) across metrics in independent evaluation runs, enabling fair and consistent assessment of multi-agent systems.
+GreenAgent is a novel evaluation framework that measures **how agents
+coordinate**, not just whether they succeed. The system combines graph-based
+structural analysis (NetworkX metrics), LLM-as-judge assessment, and text
+similarity scoring to provide comprehensive multi-tier evaluation of agent
+coordination quality. Through A2A-compliant trace capture and directed graph
+analysis, GreenAgent reveals coordination patterns, bottlenecks, and
+collaboration effectiveness. We demonstrate perfect reproducibility (0%
+variance) across metrics in independent evaluation runs, enabling fair and
+consistent assessment of multi-agent systems.
 
 Full abstract: [docs/ABSTRACT.md](docs/ABSTRACT.md)
 
 ### Demo Video
 
-**Video URL**: [To be added - demo video showing agent startup, evaluation flow, and results interpretation]
+**Video URL**: [To be added - demo video showing agent startup, evaluation
+flow, and results interpretation]
 
 The demo video (max 3 minutes) demonstrates:
 

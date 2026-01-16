@@ -9,7 +9,7 @@
         ruff test_all coverage_all type_check validate quick_validate \
         setup_opik setup_opik_env start_opik stop_opik clean_opik status_opik \
         ralph_init ralph ralph_status ralph_clean \
-        run_agent build_agent test_agent \
+        run_agent build_agent test_agent push_agent publish_agent \
         help
 .DEFAULT_GOAL := help
 
@@ -172,12 +172,38 @@ ralph_clean:  ## Reset Ralph state (WARNING: removes prd.json and progress.txt)
 
 # MARK: agentbeats
 
+# Docker image variables for RDI AgentBeats GreenAgent
+# Override GITHUB_USER for your own registry: make publish_agent GITHUB_USER=yourname
+GITHUB_USER ?= qte77
+IMAGE_NAME = agentbeats-greenagent
+VERSION = 0.0.0
+GHCR_IMAGE = ghcr.io/$(GITHUB_USER)/$(IMAGE_NAME)
 
 run_agent:  ## Start AgentBeats server. Usage: make run_agent or make run_agent ARGS="--port 8080"
 	PYTHONPATH=src uv run python -m agentbeats.server $(ARGS)
 
-build_agent:  ## Build AgentBeats Docker image
-	docker build -t green-agent .
+build_agent:  ## Build RDI AgentBeats GreenAgent Docker image with GHCR tags
+	docker build --platform linux/amd64 \
+		--label "org.opencontainers.image.title=GraphJudge-RDI-AgentBeats-GreenAgent" \
+		--label "org.opencontainers.image.description=Graph-based coordination evaluator for AgentBeats competition" \
+		--label "org.opencontainers.image.version=$(VERSION)" \
+		--label "org.opencontainers.image.url=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
+		--label "org.opencontainers.image.source=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
+		--label "rdi.agentbeats.agent-type=green" \
+		--label "rdi.agentbeats.competition=agentx-2025" \
+		--label "purpose=PulseMetricComplianceCoordinationAuscultatorEngine" \
+		-t $(GHCR_IMAGE):latest \
+		-t $(GHCR_IMAGE):$(VERSION) \
+		.
+
+push_agent:  ## Push RDI AgentBeats GreenAgent image to GitHub Container Registry
+	docker push $(GHCR_IMAGE):latest
+	docker push $(GHCR_IMAGE):$(VERSION)
+
+publish_agent:  ## Build and push RDI AgentBeats GreenAgent to GHCR. Usage: make publish_agent [GITHUB_USER=yourname]
+	$(MAKE) -s build_agent
+	$(MAKE) -s push_agent
+	echo "Published RDI AgentBeats GreenAgent: $(GHCR_IMAGE):latest and $(GHCR_IMAGE):$(VERSION)"
 
 test_agent:  ## Run agentbeats tests
 	uv run pytest tests/
