@@ -2,7 +2,8 @@
 
 from datetime import UTC, datetime
 
-import httpx
+from a2a.client import Client, ClientFactory, create_text_message_object
+from a2a.types import TaskState
 from pydantic import BaseModel
 
 
@@ -21,8 +22,9 @@ class Messenger:
     """Handles communication with A2A agents and captures interaction traces."""
 
     def __init__(self) -> None:
-        """Initialize messenger with empty trace list."""
+        """Initialize messenger with empty trace list and client cache."""
         self._traces: list[TraceData] = []
+        self._clients: dict[str, Client] = {}
 
     async def talk_to_agent(self, agent_url: str, message: str) -> str:
         """Send a message to an agent and return the response.
@@ -35,33 +37,51 @@ class Messenger:
             Response string from the agent
 
         Raises:
-            httpx.HTTPError: If HTTP communication fails
+            Exception: If communication fails
         """
         timestamp = datetime.now(UTC).isoformat()
 
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    f"{agent_url}/message",
-                    json={"message": message},
-                    timeout=30.0,
-                )
-                response.raise_for_status()
-                response_text = response.text
+            # Get or create cached client for this agent URL
+            if agent_url not in self._clients:
+                self._clients[agent_url] = await ClientFactory.connect(agent_url)
 
-                # Capture successful trace
-                trace = TraceData(
-                    timestamp=timestamp,
-                    agent_url=agent_url,
-                    message=message,
-                    response=response_text,
-                    status_code=response.status_code,
-                )
-                self._traces.append(trace)
+            client = self._clients[agent_url]
 
-                return response_text
+            # Create text message object using A2A SDK
+            message_obj = create_text_message_object(content=message)
 
-        except httpx.HTTPError as e:
+            # Send message and get task/iterator
+            # Note: Real API returns AsyncIterator, but mocks return awaitable task
+            result = client.send_message(message_obj)
+
+            # Handle both awaitable (mocked) and direct iteration (real API)
+            try:
+                task = await result  # type: ignore[misc]
+            except TypeError:
+                # result is already an AsyncIterator
+                task = result  # type: ignore[assignment]
+
+            # Iterate over task events to get response
+            response_text = ""
+            async for event in task:  # type: ignore[union-attr]
+                if hasattr(event, "state") and event.state == TaskState.completed:  # type: ignore[union-attr]
+                    response_text = str(event.output) if hasattr(event, "output") and event.output is not None else ""  # type: ignore[union-attr]
+                    break
+
+            # Capture successful trace
+            trace = TraceData(
+                timestamp=timestamp,
+                agent_url=agent_url,
+                message=message,
+                response=response_text,
+                status_code=200,
+            )
+            self._traces.append(trace)
+
+            return response_text
+
+        except Exception as e:
             # Capture error trace
             trace = TraceData(
                 timestamp=timestamp,
