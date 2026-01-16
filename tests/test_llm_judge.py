@@ -420,3 +420,319 @@ class TestLLMClientConfigurationIntegration:
             result = await judge.evaluate(traces)
             assert result is not None
             assert isinstance(result.overall_score, float)
+
+
+class TestLLMPromptContract:
+    """Tests defining the LLM prompt contract for evaluation."""
+
+    def test_llm_judge_has_prompt_builder_method(self) -> None:
+        """Test that LLMJudge has a method to build evaluation prompts."""
+        # Given: An LLMJudge instance
+        from agentbeats.evals.llm_judge import LLMJudge
+
+        judge = LLMJudge()
+
+        # Then: Should have a method to build prompts from traces
+        # This method will be used internally by evaluate()
+        assert hasattr(judge, "_build_prompt") or hasattr(judge, "build_prompt")
+
+    def test_prompt_serializes_trace_data_list(self) -> None:
+        """Test that prompt serializes TraceData list into readable format."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="Hello agent",
+                response="Hello user",
+                status_code=200,
+                task_id="task-123",
+            ),
+            TraceData(
+                timestamp="2026-01-15T10:01:00Z",
+                agent_url="http://localhost:9010",
+                message="Process data",
+                response="Data processed",
+                status_code=200,
+                task_id="task-124",
+            ),
+        ]
+
+        # When: We build a prompt from traces
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should contain serialized trace information
+        assert isinstance(prompt, str)
+        assert len(prompt) > 0
+        # Prompt should include key trace data
+        assert "Hello agent" in prompt or "message" in prompt.lower()
+        assert "Hello user" in prompt or "response" in prompt.lower()
+        # Should include context about agent interactions
+        assert "agent" in prompt.lower() or "interaction" in prompt.lower()
+
+    def test_prompt_asks_for_overall_score(self) -> None:
+        """Test that prompt asks LLM to provide overall_score (0-1)."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should ask for overall_score field
+        assert "overall_score" in prompt
+        # Should specify it's a 0-1 range
+        assert "0" in prompt and "1" in prompt
+
+    def test_prompt_asks_for_reasoning(self) -> None:
+        """Test that prompt asks LLM to provide reasoning explanation."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should ask for reasoning field
+        assert "reasoning" in prompt
+
+    def test_prompt_asks_for_coordination_quality(self) -> None:
+        """Test that prompt asks LLM to assess coordination_quality."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should ask for coordination_quality field
+        assert "coordination_quality" in prompt
+
+    def test_prompt_asks_for_strengths_and_weaknesses(self) -> None:
+        """Test that prompt asks LLM to identify strengths and weaknesses."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should ask for strengths and weaknesses
+        assert "strengths" in prompt
+        assert "weaknesses" in prompt
+
+    def test_prompt_requests_json_formatted_response(self) -> None:
+        """Test that prompt requests JSON-formatted response."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should explicitly request JSON format
+        assert "json" in prompt.lower() or "JSON" in prompt
+        # Should reference the expected schema structure
+        assert "overall_score" in prompt
+        assert "reasoning" in prompt
+
+    def test_prompt_matches_llm_judgment_schema(self) -> None:
+        """Test that prompt describes fields matching LLMJudgment schema."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge, LLMJudgment
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should describe all LLMJudgment fields
+        # Required fields
+        assert "overall_score" in prompt
+        assert "reasoning" in prompt
+        # Optional fields
+        assert "coordination_quality" in prompt
+        assert "strengths" in prompt
+        assert "weaknesses" in prompt
+
+    def test_prompt_includes_evaluation_criteria(self) -> None:
+        """Test that prompt includes clear evaluation criteria."""
+        # Given: LLMJudge and sample traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="response",
+                status_code=200,
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should include evaluation criteria
+        # Should mention what to evaluate
+        assert "evaluate" in prompt.lower() or "assess" in prompt.lower()
+        # Should mention coordination aspects
+        assert "coordination" in prompt.lower() or "interaction" in prompt.lower()
+        # Should provide guidance on scoring
+        assert "quality" in prompt.lower() or "performance" in prompt.lower()
+
+    def test_prompt_handles_multiple_traces(self) -> None:
+        """Test that prompt handles multiple traces correctly."""
+        # Given: LLMJudge and multiple traces
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="Message 1",
+                response="Response 1",
+                status_code=200,
+            ),
+            TraceData(
+                timestamp="2026-01-15T10:01:00Z",
+                agent_url="http://localhost:9010",
+                message="Message 2",
+                response="Response 2",
+                status_code=200,
+            ),
+            TraceData(
+                timestamp="2026-01-15T10:02:00Z",
+                agent_url="http://localhost:9011",
+                message="Message 3",
+                response="Response 3",
+                status_code=500,
+                error="Connection failed",
+            ),
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should include information about all traces
+        # Should be comprehensive enough to capture key interactions
+        assert len(prompt) > 100  # Should be substantial
+        # Should indicate multiple interactions
+        assert prompt.count("Message") >= 1 or prompt.count("message") >= 2
+
+    def test_prompt_includes_error_information(self) -> None:
+        """Test that prompt includes error information from failed traces."""
+        # Given: LLMJudge and traces with errors
+        from agentbeats.evals.llm_judge import LLMJudge
+        from agentbeats.messenger import TraceData
+
+        judge = LLMJudge()
+        traces = [
+            TraceData(
+                timestamp="2026-01-15T10:00:00Z",
+                agent_url="http://localhost:9009",
+                message="test",
+                response="",
+                status_code=500,
+                error="Connection timeout",
+            )
+        ]
+
+        # When: We build a prompt
+        prompt_method = getattr(judge, "_build_prompt", None) or getattr(judge, "build_prompt", None)
+        assert prompt_method is not None
+        prompt = prompt_method(traces)
+
+        # Then: Prompt should include error information
+        assert "error" in prompt.lower() or "Connection timeout" in prompt or "status" in prompt.lower()

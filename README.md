@@ -76,7 +76,7 @@ make ralph_status
 ## Files
 
 - `docs/UserStory.md` - User story and value proposition
-- `docs/PRD.md` - Product requirements (17 stories)
+- `docs/PRD.md` - Latest product requirements (17 stories)
 - `docs/RalphUsage.md` - Ralph loop commands
 - `src/agentbeats/` - A2A implementation
 
@@ -114,7 +114,7 @@ collaboration effectiveness. We demonstrate perfect reproducibility (0%
 variance) across metrics in independent evaluation runs, enabling fair and
 consistent assessment of multi-agent systems.
 
-Full abstract: [docs/ABSTRACT.md](docs/ABSTRACT.md)
+Full abstract: [docs/ralph-results/ABSTRACT.md](docs/ralph-results/ABSTRACT.md)
 
 ### Demo Video
 
