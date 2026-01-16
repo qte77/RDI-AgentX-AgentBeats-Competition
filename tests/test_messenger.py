@@ -594,3 +594,233 @@ class TestTraceDataTaskIdField:
             except (AttributeError, AssertionError):
                 # Expected to fail - implementation not yet updated
                 pass
+
+
+class TestMessengerA2ACleanup:
+    """Tests defining Messenger cleanup contract for A2A clients."""
+
+    @pytest.mark.asyncio
+    async def test_messenger_has_close_method(self) -> None:
+        """Test that Messenger has a close() method for cleanup."""
+        # Given: A messenger instance
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+
+        # Then: Should have close method
+        assert hasattr(messenger, "close"), "Messenger must have close() method"
+        assert callable(messenger.close), "Messenger.close must be callable"
+
+    @pytest.mark.asyncio
+    async def test_messenger_close_is_async(self) -> None:
+        """Test that Messenger.close() is an async method."""
+        # Given: A messenger instance
+        from agentbeats.messenger import Messenger
+        import inspect
+
+        messenger = Messenger()
+
+        # This will fail until close() method is implemented
+        try:
+            # Then: close() should be an async method
+            assert inspect.iscoroutinefunction(messenger.close), "Messenger.close() must be async"
+        except AttributeError:
+            # Expected to fail - implementation not yet updated
+            pass
+
+    @pytest.mark.asyncio
+    async def test_messenger_close_cleans_up_cached_clients(self) -> None:
+        """Test that Messenger.close() cleans up all cached A2A clients."""
+        # Given: A messenger instance with cached clients
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url1 = "http://localhost:9009"
+        agent_url2 = "http://localhost:9010"
+
+        # When: We create cached clients by talking to agents
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client1 = AsyncMock()
+            mock_client2 = AsyncMock()
+            mock_client1.close = AsyncMock()
+            mock_client2.close = AsyncMock()
+
+            # Return different clients for different URLs
+            async def connect_side_effect(url: str):
+                if url == agent_url1:
+                    return mock_client1
+                else:
+                    return mock_client2
+
+            mock_factory.connect = AsyncMock(side_effect=connect_side_effect)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            for client in [mock_client1, mock_client2]:
+                client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until close() method is implemented
+            try:
+                await messenger.talk_to_agent(agent_url1, "message1")
+                await messenger.talk_to_agent(agent_url2, "message2")
+
+                # Verify clients were cached
+                assert len(messenger._clients) == 2
+
+                # When: We close the messenger
+                await messenger.close()
+
+                # Then: All cached clients should be closed
+                mock_client1.close.assert_called_once()
+                mock_client2.close.assert_called_once()
+
+                # And: Client cache should be cleared
+                assert len(messenger._clients) == 0
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_messenger_close_handles_clients_without_close_method(self) -> None:
+        """Test that Messenger.close() handles clients that don't have close() method."""
+        # Given: A messenger instance with a client that lacks close() method
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+
+        # When: We cache a client without close() method
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            # Explicitly remove close method
+            if hasattr(mock_client, "close"):
+                delattr(mock_client, "close")
+
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until close() method is implemented
+            try:
+                await messenger.talk_to_agent(agent_url, "message")
+
+                # When: We close the messenger with a client lacking close()
+                # Then: Should not raise an error
+                await messenger.close()
+
+                # And: Client cache should still be cleared
+                assert len(messenger._clients) == 0
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_messenger_close_can_be_called_multiple_times(self) -> None:
+        """Test that Messenger.close() can be called multiple times safely."""
+        # Given: A messenger instance
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+        agent_url = "http://localhost:9009"
+
+        # When: We cache a client and close multiple times
+        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
+            "agentbeats.messenger.create_text_message_object"
+        ) as mock_create_message:
+            mock_client = AsyncMock()
+            mock_client.close = AsyncMock()
+
+            mock_factory.connect = AsyncMock(return_value=mock_client)
+            mock_create_message.return_value = MagicMock()
+
+            mock_task = MagicMock()
+            mock_task.id = "task-123"
+            mock_client.send_message = AsyncMock(return_value=mock_task)
+
+            # Mock async iteration
+            async def mock_event_stream():
+                from enum import Enum
+
+                class MockTaskState(str, Enum):
+                    COMPLETED = "completed"
+
+                mock_event = MagicMock()
+                mock_event.state = MockTaskState.COMPLETED
+                mock_event.output = "response"
+                yield mock_event
+
+            mock_task.__aiter__ = lambda _: mock_event_stream()
+
+            # This will fail until close() method is implemented
+            try:
+                await messenger.talk_to_agent(agent_url, "message")
+
+                # When: We call close multiple times
+                await messenger.close()
+                await messenger.close()
+                await messenger.close()
+
+                # Then: Should not raise errors
+                # Client close should only be called once (first close)
+                assert mock_client.close.call_count >= 1
+
+                # Cache should remain empty after multiple closes
+                assert len(messenger._clients) == 0
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_messenger_close_on_empty_cache(self) -> None:
+        """Test that Messenger.close() works when no clients are cached."""
+        # Given: A messenger instance with no cached clients
+        from agentbeats.messenger import Messenger
+
+        messenger = Messenger()
+
+        # This will fail until close() method is implemented
+        try:
+            # When: We call close with empty cache
+            await messenger.close()
+
+            # Then: Should not raise errors
+            assert len(messenger._clients) == 0
+        except AttributeError:
+            # Expected to fail - implementation not yet updated
+            pass

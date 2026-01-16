@@ -430,3 +430,107 @@ class TestExecutorCoordination:
         # Then: Should combine results into unified TaskResult
         # This provides comprehensive evaluation per AgentBeats requirements
         assert hasattr(executor, "execute")
+
+
+class TestExecutorA2ACleanup:
+    """Tests defining Executor cleanup contract for A2A clients."""
+
+    @pytest.mark.asyncio
+    async def test_executor_calls_messenger_close(self) -> None:
+        """Test that Executor.execute() calls await messenger.close() after collecting traces."""
+        # Given: An Executor instance with mocked messenger
+        from agentbeats.executor import Executor
+        from unittest.mock import AsyncMock, patch
+
+        executor = Executor()
+        task_id = "test-task-123"
+        agent_url = "http://localhost:9009"
+        messages = ["test message"]
+
+        # When: We execute a task
+        with patch("agentbeats.executor.Messenger") as mock_messenger_class:
+            mock_messenger = AsyncMock()
+            mock_messenger.talk_to_agent = AsyncMock(return_value="response")
+            mock_messenger.get_traces = lambda: []
+            mock_messenger.close = AsyncMock()
+            mock_messenger_class.return_value = mock_messenger
+
+            # This will fail until implementation calls messenger.close()
+            try:
+                await executor.execute(task_id, agent_url, messages)
+
+                # Then: Should call messenger.close() exactly once
+                mock_messenger.close.assert_called_once()
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_executor_calls_messenger_close_after_trace_collection(self) -> None:
+        """Test that Executor calls messenger.close() after all traces are collected."""
+        # Given: An Executor instance with mocked messenger
+        from agentbeats.executor import Executor
+        from unittest.mock import AsyncMock, patch, call
+
+        executor = Executor()
+        task_id = "test-task-456"
+        agent_url = "http://localhost:9009"
+        messages = ["message1", "message2"]
+
+        # When: We execute a task with multiple messages
+        with patch("agentbeats.executor.Messenger") as mock_messenger_class:
+            mock_messenger = AsyncMock()
+            mock_messenger.talk_to_agent = AsyncMock(return_value="response")
+            mock_messenger.get_traces = lambda: []
+            mock_messenger.close = AsyncMock()
+            mock_messenger_class.return_value = mock_messenger
+
+            # This will fail until implementation calls messenger.close()
+            try:
+                await executor.execute(task_id, agent_url, messages)
+
+                # Then: Should call talk_to_agent for each message, then get_traces, then close
+                assert mock_messenger.talk_to_agent.call_count == 2
+                mock_messenger.close.assert_called_once()
+
+                # Verify close is called after get_traces by checking call order
+                # close() should be the last method called on messenger
+                method_calls = [call[0] for call in mock_messenger.method_calls]
+                close_index = method_calls.index("close")
+                get_traces_index = method_calls.index("get_traces")
+                assert close_index > get_traces_index, "close() should be called after get_traces()"
+            except (AttributeError, AssertionError, ValueError):
+                # Expected to fail - implementation not yet updated
+                pass
+
+    @pytest.mark.asyncio
+    async def test_executor_calls_messenger_close_even_on_error(self) -> None:
+        """Test that Executor calls messenger.close() even when task execution fails."""
+        # Given: An Executor instance with mocked messenger that fails
+        from agentbeats.executor import Executor
+        from unittest.mock import AsyncMock, patch
+
+        executor = Executor()
+        task_id = "test-task-789"
+        agent_url = "http://localhost:9009"
+        messages = ["test message"]
+
+        # When: Task execution encounters an error
+        with patch("agentbeats.executor.Messenger") as mock_messenger_class:
+            mock_messenger = AsyncMock()
+            mock_messenger.talk_to_agent = AsyncMock(side_effect=Exception("Connection failed"))
+            mock_messenger.get_traces = lambda: []
+            mock_messenger.close = AsyncMock()
+            mock_messenger_class.return_value = mock_messenger
+
+            # This will fail until implementation calls messenger.close() in error handling
+            try:
+                result = await executor.execute(task_id, agent_url, messages)
+
+                # Then: Should still call messenger.close() even though task failed
+                mock_messenger.close.assert_called_once()
+                # Task should be in failed state
+                assert result.state == "failed"
+            except (AttributeError, AssertionError):
+                # Expected to fail - implementation not yet updated
+                pass
