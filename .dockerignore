@@ -47,8 +47,6 @@ tests/
 # Other
 Makefile
 docker-compose*.yaml
-.dockerignore
-Dockerfile
 LICENSE.md
 CHANGELOG.md
 .gitmessage
