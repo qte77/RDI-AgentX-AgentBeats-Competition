@@ -107,3 +107,24 @@ class Messenger:
             List of TraceData objects representing all interactions
         """
         return self._traces
+
+    async def close(self) -> None:
+        """Close all cached A2A clients and clear the cache.
+
+        This method should be called when the messenger is no longer needed
+        to properly clean up A2A client resources. It can be called multiple
+        times safely - subsequent calls are no-ops.
+        """
+        # Close all cached clients
+        for client in self._clients.values():
+            # Check if client has close method before calling it
+            close_method = getattr(client, "close", None)
+            if close_method is not None and callable(close_method):
+                try:
+                    await close_method()  # type: ignore[misc]
+                except Exception:
+                    # Ignore errors during cleanup
+                    pass
+
+        # Clear the client cache
+        self._clients.clear()

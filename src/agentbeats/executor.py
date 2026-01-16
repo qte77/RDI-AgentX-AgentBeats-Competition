@@ -65,6 +65,9 @@ class Executor:
             message="Task created",
         )
 
+        # Initialize fresh messenger for this task
+        messenger = Messenger()
+
         try:
             # Transition to working state
             self._tasks[task_id] = TaskStatus(
@@ -73,9 +76,6 @@ class Executor:
                 progress=0.0,
                 message="Starting evaluation",
             )
-
-            # Initialize fresh messenger for this task
-            messenger = Messenger()
 
             # Collect traces if messages provided
             if messages:
@@ -165,6 +165,10 @@ class Executor:
                 state="failed",
                 duration_seconds=duration,
             )
+
+        finally:
+            # Always cleanup A2A clients, even on error
+            await messenger.close()
 
     async def _evaluate_tier1(self, traces: list[TraceData]) -> dict[str, Any]:
         """Run Tier 1 graph evaluation.
