@@ -25,6 +25,8 @@ We validated the framework on a baseline purple agent across 5 runs, achieving
 perfect reproducibility. GraphJudge operates as an A2A-compliant assessor with
 standard endpoints, Docker deployment, and AgentBeats leaderboard integration.
 
+![Agentic Graph Benchmark Architecture](../../assets/AgenticBenchArch.png)
+
 **Categories**: Multi-agent Evaluation, Research Agent
 
 **Contribution**: Agentified benchmark for multi-agent systems, quantifying
@@ -34,3 +36,7 @@ enables researchers to understand not just if agents coordinate, but how
 effectively.
 
 **Agent Registry**: <https://agentbeats.dev/qte77/graphjudge>
+
+**Note**: Competition time constraints limited implementation scope; current
+release focuses on core graph-based coordination assessment with demonstrated
+reproducibility.

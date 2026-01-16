@@ -34,6 +34,8 @@ Purple Agents → A2A Request → GreenAgent
                               A2A Artifact {scores}
 ```
 
+![Agentic Graph Benchmark Architecture](assets/AgenticBenchArch.png)
+
 ## Quick Start
 
 ### Option 1: Run from GHCR (no build needed)
@@ -93,6 +95,10 @@ make ralph_status
 - ✅ Phase 1: A2A + Graph + Basic eval (current)
 - 🔜 Phase 2: ART training on traces (outlook)
 - 🔮 Phase 3: Self-evolving GreenAgent (outlook, e.g., [DGM](https://arxiv.org/abs/2410.04444))
+
+**Note**: Time constraints limited full implementation of advanced features
+planned in Phase 2 and 3. Current release focuses on core graph-based
+evaluation with proven reproducibility.
 
 ## Competition Tracks
 

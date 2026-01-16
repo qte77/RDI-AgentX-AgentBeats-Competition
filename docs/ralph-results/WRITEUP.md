@@ -96,6 +96,11 @@ straightforward:
 4. Three-tier evaluation produces comprehensive coordination scores
 5. Results returned as structured A2A artifacts
 
+The complete agentic graph benchmark architecture is visualized below, showing
+the full evaluation pipeline from trace capture through multi-tier scoring:
+
+![Agentic Graph Benchmark Architecture](../../assets/AgenticBenchArch.png)
+
 We validated the framework on a baseline purple agent across 5 independent
 runs, achieving **perfect reproducibility** (0% variance across all metrics).
 This isn't just about proving correctness—it demonstrates that our evaluation
@@ -145,6 +150,14 @@ education), though coordinating everything in time tests your project
 management skills. The resulting infrastructure is well-designed for the agent
 ecosystem's long-term growth.
 
+**Time Constraints**: Competition deadlines unfortunately cut development time
+short, limiting implementation of advanced features like interactive graph
+visualizations, Phase 2 ART training on traces, and comprehensive plugin
+ecosystem expansion. The current release prioritizes core graph-based
+coordination assessment with proven reproducibility, establishing a foundation
+for future enhancements. The agentic benchmark architecture visualization
+(`assets/AgenticBenchArch.png`) documents the intended full system design.
+
 ### Technical Contributions
 
 GraphJudge introduces three novel elements to AgentBeats:
@@ -170,7 +183,13 @@ contexts.
 quality through graph structural analysis, enabling researchers to understand
 not just if agents coordinate, but how effectively.
 
-GraphJudge pioneers **agentified benchmarking** for multi-agent systems—using automated evaluation agents to assess coordination quality. This approach is demonstrated through integration with agents-eval, a research MAS that evaluates autonomous agents on the PeerRead dataset. By combining graph-based structural metrics with domain-specific evaluation plugins, GraphJudge establishes a framework where assessment agents can be specialized for different contexts while maintaining consistent coordination analysis.
+GraphJudge pioneers **agentified benchmarking** for multi-agent systems—using
+automated evaluation agents to assess coordination quality. This approach is
+demonstrated through integration with agents-eval, a research MAS that
+evaluates autonomous agents on the PeerRead dataset. By combining graph-based
+structural metrics with domain-specific evaluation plugins, GraphJudge
+establishes a framework where assessment agents can be specialized for
+different contexts while maintaining consistent coordination analysis.
 
 ## Competition Compliance
 
