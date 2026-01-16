@@ -100,6 +100,7 @@ Full abstract: [docs/ABSTRACT.md](docs/ABSTRACT.md)
 **Video URL**: [To be added - demo video showing agent startup, evaluation flow, and results interpretation]
 
 The demo video (max 3 minutes) demonstrates:
+
 - GreenAgent server startup and A2A endpoint verification
 - Purple agent evaluation flow with trace capture
 - Multi-tier evaluation results (graph metrics, LLM judge, text similarity)
