@@ -22,6 +22,14 @@ that evaluates **how agents coordinate**, not just whether they succeed.
 Graph-based runtime coordination analysis - measuring collaboration quality
 through NetworkX metrics and LLM-as-judge evaluation.
 
+## Evaluation Tiers
+
+| Tier | Type      | Description                                   |
+| ---- | --------- | --------------------------------------------- |
+| 1    | Graph     | NetworkX metrics (centrality, efficiency)     |
+| 2    | LLM-Judge | Coordination quality assessment               |
+| 3    | Text      | Similarity metrics (plugin for PeerRead)      |
+
 ## Architecture
 
 ```text
@@ -35,6 +43,16 @@ Purple Agents → A2A Request → GreenAgent
 ```
 
 ![Agentic Graph Benchmark Architecture](assets/AgenticBenchArch.png)
+
+## Roadmap
+
+- ✅ Phase 1: A2A + Graph + Basic eval (current)
+- 🔜 Phase 2: ART training on traces (outlook)
+- 🔮 Phase 3: Self-evolving GreenAgent (outlook, e.g., [DGM](https://arxiv.org/abs/2410.04444))
+
+**Note**: Time constraints limited full implementation of advanced features
+planned in Phase 2 and 3. Current release focuses on core graph-based
+evaluation with proven reproducibility.
 
 ## Quick Start
 
@@ -81,24 +99,6 @@ make ralph_status
 - `docs/PRD.md` - Latest product requirements (17 stories)
 - `docs/RalphUsage.md` - Ralph loop commands
 - `src/agentbeats/` - A2A implementation
-
-## Evaluation Tiers
-
-| Tier | Type      | Description                                   |
-| ---- | --------- | --------------------------------------------- |
-| 1    | Graph     | NetworkX metrics (centrality, efficiency)     |
-| 2    | LLM-Judge | Coordination quality assessment               |
-| 3    | Text      | Similarity metrics (plugin for PeerRead)      |
-
-## Roadmap
-
-- ✅ Phase 1: A2A + Graph + Basic eval (current)
-- 🔜 Phase 2: ART training on traces (outlook)
-- 🔮 Phase 3: Self-evolving GreenAgent (outlook, e.g., [DGM](https://arxiv.org/abs/2410.04444))
-
-**Note**: Time constraints limited full implementation of advanced features
-planned in Phase 2 and 3. Current release focuses on core graph-based
-evaluation with proven reproducibility.
 
 ## Competition Tracks
 
