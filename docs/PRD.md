@@ -37,75 +37,112 @@ completed first** to enable real agent evaluation.
 
 ## Functional Requirements
 
+**TDD Mandate:** All feature stories follow TEST→IMPL pattern. Tests written
+first define the contract, implementation makes tests pass.
+
 ### PHASE 1: A2A Protocol Compliance (PREREQUISITE)
 
-#### STORY-001: Replace httpx with A2A SDK ClientFactory
+#### STORY-001-TEST: Write A2A SDK messenger tests
 
-**Why:** Enables capturing real agent coordination interactions instead of
-synthetic data.
+Write tests defining messenger contract for A2A SDK integration.
 
-Refactor Messenger to use A2A SDK client for protocol compliance.
+**Acceptance Criteria:**
+
+- `tests/test_messenger.py` updated with A2A SDK tests
+- Tests define expected behavior for `ClientFactory.connect()`
+- Tests define expected behavior for `create_text_message_object()`
+- Tests mock async iteration over `send_message()` events
+- Tests verify client caching per agent URL
+- Test file is syntactically valid Python
+
+**Files:** tests/test_messenger.py
+
+---
+
+#### STORY-001-IMPL: Refactor messenger to use A2A SDK
+
+Implement messenger.py to pass A2A SDK tests.
 
 **Acceptance Criteria:**
 
 - `src/agentbeats/messenger.py` imports `ClientFactory`,
   `create_text_message_object` from `a2a.client`
-- `talk_to_agent()` uses `await ClientFactory.connect(agent_url)` instead
-  of httpx
+- `talk_to_agent()` uses `await ClientFactory.connect(agent_url)`
 - Messages created via `create_text_message_object(content=message)`
 - Response extracted from `TaskState.completed` events
-- Client caching per agent URL for performance
+- Client caching per agent URL implemented
+- `uv run pytest tests/test_messenger.py` passes
 - `make type_check` passes
 
 **Files:** src/agentbeats/messenger.py
 
 ---
 
-#### STORY-002: Update TraceData with task_id field
+#### STORY-002-TEST: Write TraceData task_id field tests
 
-**Why:** Proper A2A task tracking enables correlation of coordination events
-in graph analysis.
+Write tests defining TraceData task_id field requirement.
 
-Add A2A task tracking to TraceData model.
+**Acceptance Criteria:**
+
+- `tests/test_messenger.py` updated with task_id tests
+- Tests verify TraceData model has `task_id: str | None = None` field
+- Tests verify `task.id` is captured in TraceData
+- Tests verify existing fields preserved
+- Test file is syntactically valid Python
+
+**Files:** tests/test_messenger.py
+
+---
+
+#### STORY-002-IMPL: Add task_id field to TraceData
+
+Implement task_id tracking in TraceData model.
 
 **Acceptance Criteria:**
 
 - `TraceData` model has new field: `task_id: str | None = None`
 - `talk_to_agent()` captures `task.id` from A2A Task object
-- Existing fields (`timestamp`, `agent_url`, `message`, `response`,
-  `status_code`, `error`) preserved
+- Existing fields preserved
+- `uv run pytest tests/test_messenger.py` passes
 - `make type_check` passes
 
 **Files:** src/agentbeats/messenger.py
 
 ---
 
-#### STORY-003: Update Executor and tests for A2A patterns
+#### STORY-003-TEST: Write Executor A2A cleanup tests
 
-**Why:** Ensures clean A2A client lifecycle and validates protocol compliance
-in tests.
+Write tests defining Executor cleanup contract for A2A clients.
 
-Update Executor to clean up A2A clients and update test mocks.
+**Acceptance Criteria:**
+
+- `tests/test_executor.py` updated with cleanup tests
+- Tests verify `Executor.execute()` calls `await messenger.close()`
+- Tests verify `Messenger.close()` cleans up cached clients
+- Test file is syntactically valid Python
+
+**Files:** tests/test_executor.py
+
+---
+
+#### STORY-003-IMPL: Implement Executor A2A cleanup
+
+Implement executor cleanup to pass tests.
 
 **Acceptance Criteria:**
 
 - `Executor.execute()` calls `await messenger.close()` after collecting traces
 - `Messenger` has `close()` method to cleanup cached clients
-- `tests/test_messenger.py` mocks `ClientFactory.connect()` instead of httpx
-- `tests/test_messenger.py` mocks async iteration over `send_message()`
-  events
-- All messenger and executor tests pass
 - `uv run pytest tests/test_messenger.py tests/test_executor.py` passes
+- `make type_check` passes
 
-**Files:** src/agentbeats/executor.py, tests/test_messenger.py
+**Files:** src/agentbeats/executor.py, src/agentbeats/messenger.py
 
 ---
 
 ### PHASE 2: Real LLM Integration
 
 #### STORY-004: Add OpenAI dependency
-
-**Why:** Required for LLM-based coordination pattern assessment.
 
 Add openai SDK to project dependencies.
 
@@ -119,12 +156,27 @@ Add openai SDK to project dependencies.
 
 ---
 
-#### STORY-005: Implement LLM client configuration
+#### STORY-005-TEST: Write LLM client config tests
 
-**Why:** Enables flexible LLM evaluation across different providers
-(OpenAI, Azure, Ollama).
+Write tests defining LLM client configuration contract.
 
-Add configurable OpenAI-compatible client to LLMJudge.
+**Acceptance Criteria:**
+
+- `tests/test_llm_judge.py` updated with config tests
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_API_KEY`
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_BASE_URL` (default:
+  `https://api.openai.com/v1`)
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_MODEL` (default: `gpt-4o-mini`)
+- Tests verify OpenAI-compatible endpoint support
+- Test file is syntactically valid Python
+
+**Files:** tests/test_llm_judge.py
+
+---
+
+#### STORY-005-IMPL: Implement LLM client config
+
+Implement LLM client configuration to pass tests.
 
 **Acceptance Criteria:**
 
@@ -132,19 +184,36 @@ Add configurable OpenAI-compatible client to LLMJudge.
   `AGENTBEATS_LLM_BASE_URL`, `AGENTBEATS_LLM_MODEL`
 - Default base URL is `https://api.openai.com/v1`
 - Default model is `gpt-4o-mini`
-- Client supports any OpenAI-compatible endpoint (OpenAI, Azure, Ollama,
-  vLLM)
+- Client supports any OpenAI-compatible endpoint
+- `uv run pytest tests/test_llm_judge.py` passes
+- `make type_check` passes
 
 **Files:** src/agentbeats/evals/llm_judge.py
 
 ---
 
-#### STORY-006: Create LLM evaluation prompt
+#### STORY-006-TEST: Write LLM prompt tests
 
-**Why:** Structured prompt ensures consistent coordination quality scoring
-across evaluations.
+Write tests defining LLM evaluation prompt contract.
 
-Design prompt for agent coordination quality assessment.
+**Acceptance Criteria:**
+
+- `tests/test_llm_judge.py` updated with prompt tests
+- Tests verify prompt serializes TraceData list
+- Tests verify prompt asks for: overall_score (0-1), reasoning,
+  coordination_quality, strengths, weaknesses
+- Tests verify prompt requests JSON-formatted response matching LLMJudgment
+  schema
+- Tests verify prompt includes evaluation criteria
+- Test file is syntactically valid Python
+
+**Files:** tests/test_llm_judge.py
+
+---
+
+#### STORY-006-IMPL: Implement LLM prompt
+
+Implement LLM evaluation prompt to pass tests.
 
 **Acceptance Criteria:**
 
@@ -153,17 +222,34 @@ Design prompt for agent coordination quality assessment.
   strengths, weaknesses
 - Prompt requests JSON-formatted response matching LLMJudgment schema
 - Prompt includes clear evaluation criteria for coordination quality
+- `uv run pytest tests/test_llm_judge.py` passes
+- `make type_check` passes
 
 **Files:** src/agentbeats/evals/llm_judge.py
 
 ---
 
-#### STORY-007: Implement LLM API calls with fallback
+#### STORY-007-TEST: Write LLM API fallback tests
 
-**Why:** Real LLM assessment provides nuanced coordination analysis beyond
-rule-based logic.
+Write tests defining LLM API calls with fallback contract.
 
-Replace rule-based logic with actual LLM calls, keeping fallback.
+**Acceptance Criteria:**
+
+- `tests/test_llm_judge.py` updated with API fallback tests
+- Tests mock `openai.ChatCompletion.create()` (or equivalent async call)
+- Tests verify LLM response parsing into LLMJudgment
+- Tests verify fallback behavior when API fails
+- Tests verify fallback behavior when API key not set
+- Tests verify warning logged when using fallback (not error)
+- Test file is syntactically valid Python
+
+**Files:** tests/test_llm_judge.py
+
+---
+
+#### STORY-007-IMPL: Implement LLM API with fallback
+
+Implement LLM API calls with fallback to pass tests.
 
 **Acceptance Criteria:**
 
@@ -172,37 +258,35 @@ Replace rule-based logic with actual LLM calls, keeping fallback.
 - Log warning when using fallback (not error)
 - Parse LLM JSON response into LLMJudgment object
 - Handle API errors gracefully (timeout, invalid JSON, etc.)
+- `uv run pytest tests/test_llm_judge.py` passes
+- `make type_check` passes
 
 **Files:** src/agentbeats/evals/llm_judge.py
 
 ---
 
-#### STORY-008: Update LLM judge tests
+### PHASE 3: Latency Metrics
 
-**Why:** Validates LLM integration works correctly without requiring API keys
-in tests.
+#### STORY-008-TEST: Write latency evaluator tests
 
-Update tests to mock LLM API calls.
+Write tests defining latency metrics evaluator contract.
 
 **Acceptance Criteria:**
 
-- Tests mock `openai.ChatCompletion.create()` (or equivalent async call)
-- Tests verify LLM response parsing
-- Tests verify fallback behavior when API fails
-- Tests verify fallback behavior when API key not set
-- `uv run pytest tests/test_llm_judge.py` passes
+- `tests/test_latency.py` exists with focused tests
+- Tests define expected behavior for `LatencyEvaluator.evaluate(traces)`
+- Tests verify timestamp parsing from TraceData
+- Tests verify percentile calculations: avg, p50, p95, p99
+- Tests verify slowest agent URL identification
+- Test file is syntactically valid Python
 
-**Files:** tests/test_llm_judge.py
+**Files:** tests/test_latency.py
 
 ---
 
-### PHASE 3: Latency Metrics
+#### STORY-008-IMPL: Implement latency evaluator
 
-#### STORY-009: Add latency metrics evaluator
-
-**Why:** Identifies performance bottlenecks in coordination workflows.
-
-Implement response time analysis for agent performance benchmarking.
+Implement latency metrics evaluator to pass tests.
 
 **Acceptance Criteria:**
 
@@ -211,34 +295,12 @@ Implement response time analysis for agent performance benchmarking.
 - Parses timestamps from TraceData
 - Computes: avg response time, p50, p95, p99
 - Identifies slowest agent URL
-- `tests/test_latency.py` verifies percentile calculations
 - `Executor._evaluate_latency()` method added (follows tier pattern)
 - Results included as `tier1_latency` in Executor response
+- `uv run pytest tests/test_latency.py` passes
 - `make type_check` and `make test_agent` pass
 
-**Files:** src/agentbeats/evals/latency.py, tests/test_latency.py,
-src/agentbeats/executor.py
-
----
-
-### PHASE 4: Documentation
-
-#### STORY-010: Document evaluator extensibility pattern
-
-**Why:** Enables benchmarkers to add domain-specific coordination metrics.
-
-Document how to add custom evaluators for future plugin development.
-
-**Acceptance Criteria:**
-
-- `README.md` has new section: "Adding Custom Evaluators"
-- Documents the current pattern: create evaluator class + add method to Executor
-- Includes example code snippet showing how to add a new evaluator
-- Mentions that formal plugin registry can be added later if needed
-- Example follows KISS principle (no complex abstractions)
-- Documentation is clear and actionable
-
-**Files:** README.md
+**Files:** src/agentbeats/evals/latency.py, src/agentbeats/executor.py
 
 ---
 
