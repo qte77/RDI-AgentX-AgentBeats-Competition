@@ -91,12 +91,12 @@ quick_validate:  ## Fast development cycle validation
 
 ralph_init:  ## Initialize Ralph loop environment
 	echo "Initializing Ralph loop environment ..."
-	bash .claude/scripts/ralph/init.sh
+	bash scripts/ralph/init.sh
 
 ralph:  ## Run Ralph autonomous development loop (use ITERATIONS=N to set max iterations)
 	echo "Starting Ralph loop ..."
 	ITERATIONS=$${ITERATIONS:-25}
-	bash .claude/scripts/ralph/ralph.sh $$ITERATIONS
+	bash scripts/ralph/ralph.sh $$ITERATIONS
 
 ralph_status:  ## Show Ralph loop progress and status
 	echo "Ralph Loop Status"
