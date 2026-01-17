@@ -11,7 +11,6 @@ from pathlib import Path
 
 from anthropic import Anthropic
 
-
 OUTPUT_FILE = Path("docs/AgentsBeats/CompetitionAnalysis-Claude.json")
 
 
@@ -50,7 +49,7 @@ and produce comprehensive JSON output following the schema above.
         model="claude-sonnet-4-5",
         max_tokens=16000,
         temperature=0.0,
-        messages=[{"role": "user", "content": full_prompt}]
+        messages=[{"role": "user", "content": full_prompt}],
     )
 
     # Parse response
