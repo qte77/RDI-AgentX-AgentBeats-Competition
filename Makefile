@@ -60,8 +60,8 @@ run_cli:  ## Run app on CLI only. Usage: make run_cli ARGS="--help" or make run_
 
 
 ruff:  ## Lint: Format and check with ruff
-	uv run ruff format --exclude tests
-	uv run ruff check --fix --exclude tests
+	uv run ruff format
+	uv run ruff check --fix
 
 test_all:  ## Run all tests
 	uv run pytest
