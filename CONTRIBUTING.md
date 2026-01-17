@@ -5,11 +5,25 @@ applies-to: Agents and humans
 purpose: Developer setup, workflow, and contribution guidelines
 ---
 
+## Onboarding
+
+New to this codebase? Start here:
+
+| Area       | File                            | Purpose              |
+| ---------- | ------------------------------- | -------------------- |
+| Principles | `.claude/rules/core-principles` | KISS/DRY/YAGNI       |
+| Agents     | `AGENTS.md`                     | Agent behavior       |
+| Stories    | `docs/PRD.md`                   | 17 user stories      |
+| Commands   | `Makefile`                      | Dev commands         |
+| Skills     | `.claude/skills/`               | Task-specific agents |
+| Settings   | `.claude/settings.json`         | Permissions, tools   |
+
+---
+
 ## Development Setup
 
 ### Prerequisites
 
-- Python 3.14+
 - `uv` package manager
 
 ### Initial Setup
@@ -29,14 +43,14 @@ make validate
 ### Standard Development
 
 ```bash
-# Format code
-make format
+# Format and lint code
+make ruff
 
 # Type check
-make typecheck
+make type_check
 
 # Run tests
-make test
+make test_all
 
 # Run all quality gates
 make validate
@@ -131,11 +145,17 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>
 
 ## Code Guidelines
 
-See `AGENTS.md` for comprehensive agent guidelines.
-
 ### Core Principles
 
-All code must follow `.claude/rules/core-principles.md` (KISS/DRY/YAGNI).
+All code must follow `.claude/rules/core-principles.md`:
+
+- **KISS** (Keep It Simple, Stupid): Simplest solution that works
+- **DRY** (Don't Repeat Yourself): Single source of truth
+- **YAGNI** (You Aren't Gonna Need It): Implement only what's requested
+
+### Agent-Specific Guidelines
+
+See `AGENTS.md` for agent behavioral requirements and task execution protocols.
 
 ### Python Best Practices
 

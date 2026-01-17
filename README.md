@@ -29,13 +29,6 @@ through NetworkX metrics and LLM-as-judge evaluation.
 
 ![Agentic Graph Benchmark Architecture](assets/AgenticBenchArch.png)
 
-## Important Files
-
-- `docs/UserStory.md` - User story and value proposition
-- `docs/PRD.md` - Latest product requirements (17 stories)
-- `src/agentbeats/` - A2A implementation
-- `docs/RalphUsage.md` - Ralph loop commands
-
 ## Submission
 
 ### Competition Tracks
@@ -74,8 +67,11 @@ The demo video (max 3 minutes) demonstrates:
 ## Roadmap
 
 - ✅ Phase 1: A2A + Graph + Basic eval (current)
-- 🔜 Phase 2 (outlook): ART training on traces, potentially using [WeightWatcher](https://github.com/calculatedcontent/weightwatcher) or [PerforatedAI](https://github.com/PerforatedAI/PerforatedAI)
-- 🔮 Phase 3 (outlook): Self-evolving GreenAgent, e.g., [DGM](https://arxiv.org/abs/2410.04444)
+- 🔜 Phase 2 (outlook): ART training on traces, potentially using
+  [WeightWatcher](https://github.com/calculatedcontent/weightwatcher) or
+  [PerforatedAI](https://github.com/PerforatedAI/PerforatedAI)
+- 🔮 Phase 3 (outlook): Self-evolving GreenAgent, e.g.,
+  [DGM](https://arxiv.org/abs/2410.04444)
 
 **Note**: Time constraints limited full implementation of advanced features
 planned in Phase 2 and 3. Current release focuses on core graph-based
@@ -83,7 +79,7 @@ evaluation with proven reproducibility.
 
 ## Quick Start
 
-### Option 1: Run from GHCR (no build needed)
+### Run from GHCR (no build needed)
 
 ```bash
 # Pull and run GraphJudge container
@@ -94,28 +90,6 @@ docker run -p 9009:9009 ghcr.io/qte77/agentbeats-greenagent:latest
 curl localhost:9009/.well-known/agent.json
 ```
 
-### Option 2: Local development
+### Local Development
 
-```bash
-# Install dependencies
-uv sync
-
-# Start GreenAgent server
-uv run src/agentbeats/server.py
-
-# Test (new terminal)
-curl localhost:9009/.well-known/agent.json
-```
-
-## Development with Ralph Loop
-
-```bash
-# Generate task tracking from PRD
-make ralph_init
-
-# Run autonomous development
-make ralph
-
-# Check progress
-make ralph_status
-```
+For development setup, workflow, and Ralph-loop usage, see **[CONTRIBUTING.md](CONTRIBUTING.md)**.
