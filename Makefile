@@ -134,38 +134,60 @@ reorganize_prd:  ## Archive current PRD and activate new one. Usage: make reorga
 
 # MARK: agentbeats
 
-# Docker image variables for RDI AgentBeats GreenAgent
-# Override GITHUB_USER for your own registry: make publish_agent GITHUB_USER=yourname
+# Agent configuration
+# Override: make build_agent AGENT_TYPE=purple GITHUB_USER=yourname
+AGENT_TYPE ?= green
 GITHUB_USER ?= qte77
-IMAGE_NAME = agentbeats-greenagent
-VERSION = 0.0.0
+
+# Green agent config
+green_IMAGE_NAME = agentbeats-greenagent
+green_VERSION = 0.0.0
+green_DOCKERFILE = Dockerfile
+green_CONTEXT = .
+green_TITLE = GraphJudge-RDI-AgentBeats-GreenAgent
+green_DESCRIPTION = Graph-based coordination evaluator for AgentBeats competition
+green_PURPOSE = PulseMetricComplianceCoordinationAuscultatorEngine
+
+# Purple agent config
+purple_IMAGE_NAME = agentbeats-purpleagent
+purple_VERSION = 0.1.0
+purple_DOCKERFILE = examples/purple-agent/Dockerfile
+purple_CONTEXT = examples/purple-agent
+purple_TITLE = PurpleAgent-RDI-AgentBeats
+purple_DESCRIPTION = Simple A2A-compatible demo agent for AgentBeats evaluation
+purple_PURPOSE = SimpleA2ADemoAgent
+
+# Computed variables based on AGENT_TYPE
+IMAGE_NAME = $($(AGENT_TYPE)_IMAGE_NAME)
+VERSION = $($(AGENT_TYPE)_VERSION)
 GHCR_IMAGE = ghcr.io/$(GITHUB_USER)/$(IMAGE_NAME)
 
 run_agent:  ## Start AgentBeats server. Usage: make run_agent or make run_agent ARGS="--port 8080"
 	PYTHONPATH=src uv run python -m agentbeats.server $(ARGS)
 
-build_agent:  ## Build RDI AgentBeats GreenAgent Docker image with GHCR tags
+build_agent:  ## Build agent Docker image. Usage: make build_agent [AGENT_TYPE=green|purple] [GITHUB_USER=yourname]
 	docker build --platform linux/amd64 \
-		--label "org.opencontainers.image.title=GraphJudge-RDI-AgentBeats-GreenAgent" \
-		--label "org.opencontainers.image.description=Graph-based coordination evaluator for AgentBeats competition" \
+		--label "org.opencontainers.image.title=$($(AGENT_TYPE)_TITLE)" \
+		--label "org.opencontainers.image.description=$($(AGENT_TYPE)_DESCRIPTION)" \
 		--label "org.opencontainers.image.version=$(VERSION)" \
 		--label "org.opencontainers.image.url=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
 		--label "org.opencontainers.image.source=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
-		--label "rdi.agentbeats.agent-type=green" \
+		--label "rdi.agentbeats.agent-type=$(AGENT_TYPE)" \
 		--label "rdi.agentbeats.competition=agentx-2025" \
-		--label "purpose=PulseMetricComplianceCoordinationAuscultatorEngine" \
+		--label "purpose=$($(AGENT_TYPE)_PURPOSE)" \
 		-t $(GHCR_IMAGE):latest \
 		-t $(GHCR_IMAGE):$(VERSION) \
-		.
+		-f $($(AGENT_TYPE)_DOCKERFILE) \
+		$($(AGENT_TYPE)_CONTEXT)
 
-push_agent:  ## Push RDI AgentBeats GreenAgent image to GitHub Container Registry
+push_agent:  ## Push agent image to GHCR. Usage: make push_agent [AGENT_TYPE=green|purple] [GITHUB_USER=yourname]
 	docker push $(GHCR_IMAGE):latest
 	docker push $(GHCR_IMAGE):$(VERSION)
 
-publish_agent:  ## Build and push RDI AgentBeats GreenAgent to GHCR. Usage: make publish_agent [GITHUB_USER=yourname]
-	$(MAKE) -s build_agent
-	$(MAKE) -s push_agent
-	echo "Published RDI AgentBeats GreenAgent: $(GHCR_IMAGE):latest and $(GHCR_IMAGE):$(VERSION)"
+publish_agent:  ## Build and push agent to GHCR. Usage: make publish_agent [AGENT_TYPE=green|purple] [GITHUB_USER=yourname]
+	$(MAKE) -s build_agent AGENT_TYPE=$(AGENT_TYPE) GITHUB_USER=$(GITHUB_USER)
+	$(MAKE) -s push_agent AGENT_TYPE=$(AGENT_TYPE) GITHUB_USER=$(GITHUB_USER)
+	echo "Published $($(AGENT_TYPE)_TITLE): $(GHCR_IMAGE):latest and $(GHCR_IMAGE):$(VERSION)"
 
 test_agent:  ## Run agentbeats tests
 	uv run pytest tests/
