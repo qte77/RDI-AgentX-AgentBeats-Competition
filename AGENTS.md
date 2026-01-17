@@ -17,10 +17,16 @@ New to this codebase? Start here:
 
 ### 2. Skills (Task-Specific Agents)
 
+**Note**: Skills are model-invoked (automatically triggered by Claude based on context). Prefer skills over custom agents for team workflows.
+
 - **`designing-backend`** - Backend system design (no code)
 - **`implementing-python`** - Python implementation
 - **`reviewing-code`** - Code reviews
 - **`generating-prd`** - PRD.md → prd.json conversion
+
+### 2a. Specialized Agents (`.claude/agents/`)
+
+Custom agents for specialized tasks not covered by skills.
 
 ### 3. Requirements & Planning
 
