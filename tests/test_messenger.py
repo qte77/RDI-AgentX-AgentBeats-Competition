@@ -6,6 +6,44 @@ import pytest
 from pydantic import BaseModel
 
 
+def setup_two_agent_mock(agent_url1: str, agent_url2: str, add_close_method: bool = False) -> tuple:
+    """Helper to set up mock clients for two different agent URLs.
+
+    Args:
+        agent_url1: First agent URL
+        agent_url2: Second agent URL
+        add_close_method: Whether to add close() method to mock clients
+
+    Returns:
+        Tuple of (mock_client1, mock_client2, connect_side_effect, mock_event_stream)
+    """
+    mock_client1 = AsyncMock()
+    mock_client2 = AsyncMock()
+
+    if add_close_method:
+        mock_client1.close = AsyncMock()
+        mock_client2.close = AsyncMock()
+
+    async def connect_side_effect(url: str):
+        if url == agent_url1:
+            return mock_client1
+        else:
+            return mock_client2
+
+    async def mock_event_stream():
+        from enum import Enum
+
+        class MockTaskState(str, Enum):
+            COMPLETED = "completed"
+
+        mock_event = MagicMock()
+        mock_event.state = MockTaskState.COMPLETED
+        mock_event.output = "response"
+        yield mock_event
+
+    return mock_client1, mock_client2, connect_side_effect, mock_event_stream
+
+
 class TestMessengerTalkToAgent:
     """Tests defining expected behavior for Messenger.talk_to_agent()."""
 
@@ -380,15 +418,9 @@ class TestA2ASDKIntegration:
             patch("agentbeats.messenger.ClientFactory") as mock_factory,
             patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
         ):
-            mock_client1 = AsyncMock()
-            mock_client2 = AsyncMock()
-
-            # Return different clients for different URLs
-            async def connect_side_effect(url: str):
-                if url == agent_url1:
-                    return mock_client1
-                else:
-                    return mock_client2
+            mock_client1, mock_client2, connect_side_effect, mock_event_stream = setup_two_agent_mock(
+                agent_url1, agent_url2
+            )
 
             mock_factory.connect = AsyncMock(side_effect=connect_side_effect)
             mock_create_message.return_value = MagicMock()
@@ -397,18 +429,6 @@ class TestA2ASDKIntegration:
             mock_task.id = "task-123"
             for client in [mock_client1, mock_client2]:
                 client.send_message = AsyncMock(return_value=mock_task)
-
-            # Mock async iteration
-            async def mock_event_stream():
-                from enum import Enum
-
-                class MockTaskState(str, Enum):
-                    COMPLETED = "completed"
-
-                mock_event = MagicMock()
-                mock_event.state = MockTaskState.COMPLETED
-                mock_event.output = "response"
-                yield mock_event
 
             mock_task.__aiter__ = lambda _: mock_event_stream()
 
@@ -651,17 +671,9 @@ class TestMessengerA2ACleanup:
             patch("agentbeats.messenger.ClientFactory") as mock_factory,
             patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
         ):
-            mock_client1 = AsyncMock()
-            mock_client2 = AsyncMock()
-            mock_client1.close = AsyncMock()
-            mock_client2.close = AsyncMock()
-
-            # Return different clients for different URLs
-            async def connect_side_effect(url: str):
-                if url == agent_url1:
-                    return mock_client1
-                else:
-                    return mock_client2
+            mock_client1, mock_client2, connect_side_effect, mock_event_stream = setup_two_agent_mock(
+                agent_url1, agent_url2, add_close_method=True
+            )
 
             mock_factory.connect = AsyncMock(side_effect=connect_side_effect)
             mock_create_message.return_value = MagicMock()
@@ -670,18 +682,6 @@ class TestMessengerA2ACleanup:
             mock_task.id = "task-123"
             for client in [mock_client1, mock_client2]:
                 client.send_message = AsyncMock(return_value=mock_task)
-
-            # Mock async iteration
-            async def mock_event_stream():
-                from enum import Enum
-
-                class MockTaskState(str, Enum):
-                    COMPLETED = "completed"
-
-                mock_event = MagicMock()
-                mock_event.state = MockTaskState.COMPLETED
-                mock_event.output = "response"
-                yield mock_event
 
             mock_task.__aiter__ = lambda _: mock_event_stream()
 

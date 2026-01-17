@@ -91,14 +91,14 @@ def create_agent_card(card_url: str | None = None) -> AgentCard:
 
 
 def create_server(
-    host: str = "0.0.0.0",
+    host: str = "127.0.0.1",
     port: int = 9010,
     card_url: str | None = None,
 ) -> A2AStarletteApplication:
     """Create and configure the A2A server.
 
     Args:
-        host: Host address to bind to
+        host: Host address to bind to (default: 127.0.0.1 for security)
         port: Port number to bind to
         card_url: Optional custom URL for agent card metadata
 
@@ -126,8 +126,8 @@ def main() -> None:
     parser.add_argument(
         "--host",
         type=str,
-        default="0.0.0.0",
-        help="Host address to bind to (default: 0.0.0.0)",
+        default="127.0.0.1",
+        help="Host address to bind to (default: 127.0.0.1, use 0.0.0.0 for containers)",
     )
     parser.add_argument(
         "--port",

@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
 
-# Build for linux/amd64 architecture
-FROM --platform=linux/amd64 python:3.13-slim AS base
+# Base image
+# Note: Specify platform at build time with: docker build --platform linux/amd64 ...
+FROM python:3.13-slim AS base
 
 # Set environment variables for Python
 ENV PYTHONUNBUFFERED=1 \
