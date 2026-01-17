@@ -13,16 +13,14 @@ from typing import Any
 from firecrawl import FirecrawlApp
 from pydantic import BaseModel
 
-
 OUTPUT_FILE = Path("docs/AgentsBeats/CompetitionAnalysis-Firecrawl.json")
 
-URLS = [
-    "https://agentbeats.dev/"
-]
+URLS = ["https://agentbeats.dev/"]
 
 
 class ExtractSchema(BaseModel):
     """Schema loaded dynamically from JSON file."""
+
     agents: list[dict[str, Any]]
 
 
