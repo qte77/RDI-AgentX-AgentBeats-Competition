@@ -1,7 +1,7 @@
 ---
 title: Python Best Practices Reference
 version: 1.0
-applies-to: all-agents
+applies-to: Agents and humans
 purpose: Python coding standards, type annotations, and testing guidelines
 ---
 

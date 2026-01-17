@@ -1,15 +1,42 @@
-# GreenAgent: Graph-Based Coordination Assessor for Multi-Agent Systems
+# GraphJudge: Graph-Based Coordination Assessor for Multi-Agent Systems
 
 ## Abstract
 
-We present GreenAgent, a novel evaluation framework for the AgentBeats competition that measures **how agents coordinate**, not just whether they succeed. Traditional agent benchmarks focus on task completion metrics, overlooking the quality of inter-agent interactions. GreenAgent addresses this gap through multi-tier runtime coordination analysis.
+We present GraphJudge, a graph-centric evaluation framework for AgentBeats that
+measures **how agents coordinate**, not just whether they succeed. Traditional
+benchmarks focus on task completion, overlooking interaction quality. GraphJudge
+addresses this gap by measuring coordination network complexity against execution
+outcomes through runtime structural analysis.
 
-Our approach combines three complementary evaluation methodologies: (1) **Graph-based structural analysis** using NetworkX to quantify coordination patterns through metrics like node centrality, edge density, and communication efficiency; (2) **LLM-as-judge assessment** that provides qualitative evaluation of coordination quality, adaptability, and collaborative behaviors; (3) **Text similarity scoring** for measuring response consistency across multiple evaluation runs.
+Derived from [Agents-eval](https://github.com/qte77/Agents-eval) — which
+aims to evaluate autonomous research agents on the PeerRead dataset —
+GraphJudge captures interaction traces during task execution and transforms
+them into directed graphs (nodes = agents, edges = communication). We extract
+**structural metrics** (centrality, density, efficiency) that quantify
+bottlenecks, information flow, and collaboration quality.
 
-GreenAgent operates as an A2A-compliant assessor that captures interaction traces between agents during task execution. These traces are transformed into directed graphs where nodes represent agents and edges represent communication events. We extract structural metrics that reveal coordination bottlenecks, information flow patterns, and collaboration quality. The LLM judge layer provides semantic understanding of agent behaviors, while text metrics ensure reproducibility.
+**LLM-as-judge assessment** complements graph analysis with qualitative
+evaluation via real LLM API calls (rule-based fallback). A **plugin
+architecture** enables domain-specific evaluators (demonstrated via text metrics
+for PeerRead). Metrics combine into an overall multi-agent system efficacy
+score.
 
-We demonstrate the framework's effectiveness through evaluation of a baseline purple agent, achieving perfect reproducibility (0% variance) across all metrics in 5 independent runs. The system exposes standard A2A endpoints, supports containerized deployment via Docker, and integrates with the AgentBeats platform leaderboard for transparent result sharing.
+We validated the framework on a baseline purple agent across 5 runs, achieving
+perfect reproducibility. GraphJudge operates as an A2A-compliant assessor with
+standard endpoints, Docker deployment, and AgentBeats leaderboard integration.
 
-GreenAgent fills a critical gap in multi-agent evaluation by providing quantitative graph metrics and qualitative behavioral assessment, enabling researchers to understand not just if coordination occurred, but how effectively agents collaborate.
+![Agentic Graph Benchmark Architecture](../../assets/AgenticBenchArch.png)
 
-**Word Count**: 243 words
+**Categories**: Multi-agent Evaluation, Research Agent
+
+**Contribution**: Agentified benchmark for multi-agent systems, quantifying
+coordination quality through graph structural analysis. Demonstrated through
+integration with agents-eval (research MAS using PeerRead dataset), GraphJudge
+enables researchers to understand not just if agents coordinate, but how
+effectively.
+
+**Agent Registry**: <https://agentbeats.dev/qte77/graphjudge>
+
+**Note**: Competition time constraints limited implementation scope; current
+release focuses on core graph-based coordination assessment with demonstrated
+reproducibility.

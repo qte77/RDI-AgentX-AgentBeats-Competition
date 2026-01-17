@@ -1,62 +1,51 @@
-# Docker Deployment Guide
+# Docker Deployment
 
-This document describes how to build and run the AgentBeats GreenAgent using Docker.
-
-## Building the Image
-
-Build the Docker image for linux/amd64 architecture:
+## Build
 
 ```bash
 docker build -t green-agent .
 ```
 
-## Running the Container
+## Run
 
-### Default Configuration
-
-Run with default settings (host: 0.0.0.0, port: 9009):
+**Default** (host: 0.0.0.0, port: 9009):
 
 ```bash
 docker run -p 9009:9009 green-agent
 ```
 
-### Custom Configuration
-
-Run with custom host, port, and card URL:
+**Custom configuration**:
 
 ```bash
 docker run -p 8080:8080 green-agent --host 0.0.0.0 --port 8080 --card-url http://example.com:8080
 ```
 
-## Verifying the Deployment
-
-Test the agent card endpoint:
+**With LLM evaluation**:
 
 ```bash
-curl http://localhost:9009/.well-known/agent-card.json
+docker run -p 9009:9009 \
+  -e AGENTBEATS_LLM_API_KEY="your-api-key" \
+  -e AGENTBEATS_LLM_BASE_URL="https://api.openai.com/v1" \
+  -e AGENTBEATS_LLM_MODEL="gpt-4o-mini" \
+  green-agent
 ```
 
-Expected response should contain:
-- Agent name: "AgentBeats GreenAgent"
-- Description of multi-tier evaluation capabilities
-- List of skills: graph_evaluation, llm_judging, text_metrics, agent_assessment
+## Verify
 
-## Architecture
-
-The Dockerfile:
-- Targets `linux/amd64` platform
-- Uses Python 3.13 slim base image
-- Installs dependencies via uv package manager
-- Exposes port 9009 by default
-- Runs the A2A server with configurable host, port, and card URL
+```bash
+curl http://localhost:9009/.well-known/agent.json
+```
 
 ## Environment Variables
 
-- `PYTHONUNBUFFERED=1` - Ensures logs are sent to stdout immediately
-- `PYTHONDONTWRITEBYTECODE=1` - Prevents Python from writing .pyc files
+**LLM Evaluation** (optional, uses rule-based fallback if not set):
 
-## Production Considerations
+- `AGENTBEATS_LLM_API_KEY` - API key for LLM provider
+- `AGENTBEATS_LLM_BASE_URL` - OpenAI-compatible endpoint (default: `https://api.openai.com/v1`)
+- `AGENTBEATS_LLM_MODEL` - Model name (default: `gpt-4o-mini`)
 
-- The image installs only production dependencies (no dev or test packages)
-- Layer caching is optimized by copying pyproject.toml before source code
-- .dockerignore excludes unnecessary files to reduce image size
+**Runtime** (set by Dockerfile):
+
+- `PYTHONUNBUFFERED=1` - Immediate log output
+- `PYTHONDONTWRITEBYTECODE=1` - No .pyc files
+- `PYTHONPATH=/app/src` - Module path resolution

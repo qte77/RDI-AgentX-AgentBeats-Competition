@@ -1,109 +1,190 @@
 ---
-title: Product Requirements Document - AgentBeats GreenAgent (Assessor)
+title: Product Requirements Document - AgentBeats Benchmarking Enhancements
 version: 1.0
-applies-to: all-agents
-purpose: Functional requirements and acceptance criteria for all user stories
+applies-to: Agents and humans
+purpose: Enhance evaluation system with real LLM integration, plugin architecture, and additional metrics
 ---
 
 > See [UserStory.md](UserStory.md) for vision and value proposition.
 
+## Overview
+
+**Project Goal:** Evaluate multi-agent coordination quality through runtime
+graph analysis to measure HOW agents collaborate. These enhancements enable
+accurate coordination measurement by replacing synthetic data with real A2A
+interactions.
+
+This PRD extends the existing AgentBeats GreenAgent evaluation system with:
+
+1. **A2A Protocol Compliance** - Fix Messenger to use A2A SDK (PREREQUISITE)
+2. **Real LLM Integration** - Replace rule-based LLM Judge with actual API
+   calls
+3. **Latency Metrics** - Add response time analysis for performance
+   benchmarking
+4. **Documentation** - Document extensibility pattern for future custom
+   evaluators
+
+**Design Principles:** KISS, DRY, YAGNI - minimal changes, reuse existing
+patterns, defer complex abstractions.
+
+## Critical Finding
+
+The current Messenger uses incompatible REST protocol (`POST /message`)
+instead of A2A JSON-RPC. All benchmark results are currently
+synthetic/mocked data, meaning we cannot measure real coordination
+patterns—the core value proposition of GreenAgent. **Phase 1 must be
+completed first** to enable real agent evaluation.
+
 ## Functional Requirements
 
-### STORY-001: Create pyproject.toml with dependencies
+**TDD Mandate:** All feature stories follow TEST→IMPL pattern. Tests written
+first define the contract, implementation makes tests pass.
 
-Initialize Python project with A2A and graph dependencies.
+### PHASE 1: A2A Protocol Compliance (PREREQUISITE)
 
-**Acceptance Criteria:**
+#### STORY-001-TEST: Write A2A SDK messenger tests
 
-- `pyproject.toml` exists with a2a-sdk[http-server]>=0.3.20
-- `pyproject.toml` contains networkx>=3.0, pydantic>=2.0, httpx>=0.27
-- `uv sync` succeeds
-- `uv run python -c "import a2a, networkx"` succeeds
-
-**Files:** pyproject.toml
-
----
-
-### STORY-002-TEST: Write messenger tests
-
-Write tests defining messenger contract (test file creation = passing).
+Write tests defining messenger contract for A2A SDK integration.
 
 **Acceptance Criteria:**
 
-- `tests/test_messenger.py` exists with focused tests
-- Tests define expected behavior for Messenger.talk_to_agent()
-- Tests define expected behavior for Messenger.get_traces()
+- `tests/test_messenger.py` updated with A2A SDK tests
+- Tests define expected behavior for `ClientFactory.connect()`
+- Tests define expected behavior for `create_text_message_object()`
+- Tests mock async iteration over `send_message()` events
+- Tests verify client caching per agent URL
 - Test file is syntactically valid Python
 
 **Files:** tests/test_messenger.py
 
 ---
 
-### STORY-002-IMPL: Implement messenger with trace capture
+#### STORY-001-IMPL: Refactor messenger to use A2A SDK
 
-Implement messenger.py to pass tests.
+Implement messenger.py to pass A2A SDK tests.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/messenger.py` exists
+- `src/agentbeats/messenger.py` imports `ClientFactory`,
+  `create_text_message_object` from `a2a.client`
+- `talk_to_agent()` uses `await ClientFactory.connect(agent_url)`
+- Messages created via `create_text_message_object(content=message)`
+- Response extracted from `TaskState.completed` events
+- Client caching per agent URL implemented
 - `uv run pytest tests/test_messenger.py` passes
 - `make type_check` passes
 
-**Files:** src/agentbeats/**init**.py, src/agentbeats/messenger.py
+**Files:** src/agentbeats/messenger.py
 
 ---
 
-### STORY-003-TEST: Write graph evaluator tests
+#### STORY-002-TEST: Write TraceData task_id field tests
 
-Write tests defining graph evaluator contract.
+Write tests defining TraceData task_id field requirement.
 
 **Acceptance Criteria:**
 
-- `tests/test_graph.py` exists with focused tests
-- Tests define expected behavior for GraphEvaluator.build_graph(traces)
-- Tests define expected metrics: node_count, edge_count, centrality
+- `tests/test_messenger.py` updated with task_id tests
+- Tests verify TraceData model has `task_id: str | None = None` field
+- Tests verify `task.id` is captured in TraceData
+- Tests verify existing fields preserved
 - Test file is syntactically valid Python
 
-**Files:** tests/test_graph.py
+**Files:** tests/test_messenger.py
 
 ---
 
-### STORY-003-IMPL: Implement graph evaluator (Tier 1)
+#### STORY-002-IMPL: Add task_id field to TraceData
 
-Implement graph.py to pass tests.
+Implement task_id tracking in TraceData model.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/evals/graph.py` exists
-- `uv run pytest tests/test_graph.py` passes
+- `TraceData` model has new field: `task_id: str | None = None`
+- `talk_to_agent()` captures `task.id` from A2A Task object
+- Existing fields preserved
+- `uv run pytest tests/test_messenger.py` passes
 - `make type_check` passes
 
-**Files:** src/agentbeats/evals/**init**.py, src/agentbeats/evals/graph.py
+**Files:** src/agentbeats/messenger.py
 
 ---
 
-### STORY-004-TEST: Write LLM judge tests
+#### STORY-003-TEST: Write Executor A2A cleanup tests
 
-Write tests defining LLM judge contract.
+Write tests defining Executor cleanup contract for A2A clients.
 
 **Acceptance Criteria:**
 
-- `tests/test_llm_judge.py` exists with focused tests
-- Tests define expected behavior for LLMJudge.evaluate(traces)
-- Tests use mocks for LLM calls (no real API needed)
+- `tests/test_executor.py` updated with cleanup tests
+- Tests verify `Executor.execute()` calls `await messenger.close()`
+- Tests verify `Messenger.close()` cleans up cached clients
+- Test file is syntactically valid Python
+
+**Files:** tests/test_executor.py
+
+---
+
+#### STORY-003-IMPL: Implement Executor A2A cleanup
+
+Implement executor cleanup to pass tests.
+
+**Acceptance Criteria:**
+
+- `Executor.execute()` calls `await messenger.close()` after collecting traces
+- `Messenger` has `close()` method to cleanup cached clients
+- `uv run pytest tests/test_messenger.py tests/test_executor.py` passes
+- `make type_check` passes
+
+**Files:** src/agentbeats/executor.py, src/agentbeats/messenger.py
+
+---
+
+### PHASE 2: Real LLM Integration
+
+#### STORY-004: Add OpenAI dependency
+
+Add openai SDK to project dependencies.
+
+**Acceptance Criteria:**
+
+- `pyproject.toml` contains `openai>=1.0` in dependencies
+- `uv sync` succeeds
+- `uv run python -c "import openai"` succeeds
+
+**Files:** pyproject.toml
+
+---
+
+#### STORY-005-TEST: Write LLM client config tests
+
+Write tests defining LLM client configuration contract.
+
+**Acceptance Criteria:**
+
+- `tests/test_llm_judge.py` updated with config tests
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_API_KEY`
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_BASE_URL` (default:
+  `https://api.openai.com/v1`)
+- Tests verify LLMJudge reads `AGENTBEATS_LLM_MODEL` (default: `gpt-4o-mini`)
+- Tests verify OpenAI-compatible endpoint support
 - Test file is syntactically valid Python
 
 **Files:** tests/test_llm_judge.py
 
 ---
 
-### STORY-004-IMPL: Implement LLM judge evaluator (Tier 2)
+#### STORY-005-IMPL: Implement LLM client config
 
-Implement llm_judge.py to pass tests.
+Implement LLM client configuration to pass tests.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/evals/llm_judge.py` exists
+- LLMJudge reads environment variables: `AGENTBEATS_LLM_API_KEY`,
+  `AGENTBEATS_LLM_BASE_URL`, `AGENTBEATS_LLM_MODEL`
+- Default base URL is `https://api.openai.com/v1`
+- Default model is `gpt-4o-mini`
+- Client supports any OpenAI-compatible endpoint
 - `uv run pytest tests/test_llm_judge.py` passes
 - `make type_check` passes
 
@@ -111,232 +192,146 @@ Implement llm_judge.py to pass tests.
 
 ---
 
-### STORY-005-TEST: Write text metrics tests
+#### STORY-006-TEST: Write LLM prompt tests
 
-Write tests defining text metrics contract.
+Write tests defining LLM evaluation prompt contract.
 
 **Acceptance Criteria:**
 
-- `tests/test_text_metrics.py` exists with focused tests
-- Tests define expected behavior for TextMetrics.evaluate(response, reference)
-- Tests cover similarity score range (0-1)
+- `tests/test_llm_judge.py` updated with prompt tests
+- Tests verify prompt serializes TraceData list
+- Tests verify prompt asks for: overall_score (0-1), reasoning,
+  coordination_quality, strengths, weaknesses
+- Tests verify prompt requests JSON-formatted response matching LLMJudgment
+  schema
+- Tests verify prompt includes evaluation criteria
 - Test file is syntactically valid Python
 
-**Files:** tests/test_text_metrics.py
+**Files:** tests/test_llm_judge.py
 
 ---
 
-### STORY-005-IMPL: Implement text metrics plugin (Tier 3)
+#### STORY-006-IMPL: Implement LLM prompt
 
-Implement text_metrics.py to pass tests.
+Implement LLM evaluation prompt to pass tests.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/evals/text_metrics.py` exists
-- `uv run pytest tests/test_text_metrics.py` passes
+- Prompt serializes TraceData list into readable format
+- Prompt asks for: overall_score (0-1), reasoning, coordination_quality,
+  strengths, weaknesses
+- Prompt requests JSON-formatted response matching LLMJudgment schema
+- Prompt includes clear evaluation criteria for coordination quality
+- `uv run pytest tests/test_llm_judge.py` passes
 - `make type_check` passes
 
-**Files:** src/agentbeats/evals/text_metrics.py
+**Files:** src/agentbeats/evals/llm_judge.py
 
 ---
 
-### STORY-006-TEST: Write executor tests
+#### STORY-007-TEST: Write LLM API fallback tests
 
-Write tests defining A2A executor contract.
+Write tests defining LLM API calls with fallback contract.
 
 **Acceptance Criteria:**
 
-- `tests/test_executor.py` exists with focused tests
-- Tests define expected behavior for Executor.execute()
-- Tests define task lifecycle: pending → working → completed
+- `tests/test_llm_judge.py` updated with API fallback tests
+- Tests mock `openai.ChatCompletion.create()` (or equivalent async call)
+- Tests verify LLM response parsing into LLMJudgment
+- Tests verify fallback behavior when API fails
+- Tests verify fallback behavior when API key not set
+- Tests verify warning logged when using fallback (not error)
 - Test file is syntactically valid Python
 
-**Files:** tests/test_executor.py
+**Files:** tests/test_llm_judge.py
 
 ---
 
-### STORY-006-IMPL: Implement executor module
+#### STORY-007-IMPL: Implement LLM API with fallback
 
-Implement executor.py to pass tests.
+Implement LLM API calls with fallback to pass tests.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/executor.py` exists
-- `uv run pytest tests/test_executor.py` passes
+- If `AGENTBEATS_LLM_API_KEY` is set, use LLM API
+- If LLM call fails or key not set, fall back to rule-based logic
+- Log warning when using fallback (not error)
+- Parse LLM JSON response into LLMJudgment object
+- Handle API errors gracefully (timeout, invalid JSON, etc.)
+- `uv run pytest tests/test_llm_judge.py` passes
 - `make type_check` passes
 
-**Files:** src/agentbeats/executor.py
+**Files:** src/agentbeats/evals/llm_judge.py
 
 ---
 
-### STORY-007-TEST: Write agent orchestrator tests
+### PHASE 3: Latency Metrics
 
-Write tests defining agent orchestrator contract.
+#### STORY-008-TEST: Write latency evaluator tests
+
+Write tests defining latency metrics evaluator contract.
 
 **Acceptance Criteria:**
 
-- `tests/test_agent.py` exists with focused tests
-- Tests define EvalRequest model structure and validation
-- Tests define expected Agent.run() orchestration flow
+- `tests/test_latency.py` exists with focused tests
+- Tests define expected behavior for `LatencyEvaluator.evaluate(traces)`
+- Tests verify timestamp parsing from TraceData
+- Tests verify percentile calculations: avg, p50, p95, p99
+- Tests verify slowest agent URL identification
 - Test file is syntactically valid Python
 
-**Files:** tests/test_agent.py
+**Files:** tests/test_latency.py
 
 ---
 
-### STORY-007-IMPL: Implement agent orchestrator
+#### STORY-008-IMPL: Implement latency evaluator
 
-Implement agent.py to pass tests.
+Implement latency metrics evaluator to pass tests.
 
 **Acceptance Criteria:**
 
-- `src/agentbeats/agent.py` exists
-- Agent starts with fresh state per assessment
-- Uses `task_id` to namespace temporary resources
-- `uv run pytest tests/test_agent.py` passes
-- `make type_check` passes
+- `src/agentbeats/evals/latency.py` exists
+- Follows existing evaluator pattern (like GraphEvaluator, LLMJudge)
+- Parses timestamps from TraceData
+- Computes: avg response time, p50, p95, p99
+- Identifies slowest agent URL
+- `Executor._evaluate_latency()` method added (follows tier pattern)
+- Results included as `tier1_latency` in Executor response
+- `uv run pytest tests/test_latency.py` passes
+- `make type_check` and `make test_agent` pass
 
-**Files:** src/agentbeats/agent.py
+**Files:** src/agentbeats/evals/latency.py, src/agentbeats/executor.py
 
 ---
 
-### STORY-008-TEST: Write server tests
+## Verification
 
-Write tests defining A2A server contract.
+After each phase:
 
-**Acceptance Criteria:**
+1. **Tests pass**: `make test_agent`
+2. **Type checking passes**: `make type_check`
+3. **Formatting passes**: `make format && make lint`
+4. **Manual validation**: Run green agent against purple agent, verify new
+   metrics in output
 
-- `tests/test_server.py` exists with focused tests
-- Tests define AgentCard endpoint response structure
-- Tests define server startup and health behavior
-- Test file is syntactically valid Python
+## Dependencies
 
-**Files:** tests/test_server.py
+New dependencies to add:
 
----
+- Phase 2: `openai>=1.0`
+- Phase 3-4: No new dependencies
 
-### STORY-008-IMPL: Implement server entry point
+## Deferred (Future Work)
 
-Implement server.py to pass tests.
+- Plugin architecture with base classes and registry
+- BLEU score evaluator (TextMetrics covers basic text similarity)
+- Semantic similarity via embeddings
+- Error pattern categorization
+- Performance profiling (consider scalene or py-spy for future profiling needs)
 
-**Acceptance Criteria:**
+## Non-Goals
 
-- `src/agentbeats/server.py` exists
-- Server accepts `--host`, `--port`, `--card-url` CLI args
-- AgentCard at `/.well-known/agent.json` contains: name, description, skills
-- `uv run pytest tests/test_server.py` passes
-- `curl localhost:9009/.well-known/agent.json` returns A2A-compliant JSON
-
-**Files:** src/agentbeats/server.py
-
----
-
-### STORY-009: Create Dockerfile
-
-Create container for AgentBeats deployment.
-
-**Acceptance Criteria:**
-
-- `Dockerfile` exists at project root
-- Build targets `linux/amd64` architecture
-- ENTRYPOINT accepts `--host`, `--port`, `--card-url` args
-- `docker build -t green-agent .` succeeds
-- `docker run -p 9009:9009 green-agent` responds to agent card request
-
-**Files:** Dockerfile
-
----
-
-### STORY-010: Add Makefile targets
-
-Add convenience targets for development.
-
-**Acceptance Criteria:**
-
-- `make run_agent` starts server
-- `make build_agent` builds Docker
-- `make test_agent` runs agentbeats tests
-- All targets work without errors
-
-**Files:** Makefile
-
----
-
-### STORY-011: Create baseline purple agent
-
-Create A2A-compatible demo agent for submission.
-
-**Acceptance Criteria:**
-
-- `examples/purple-agent/` directory exists
-- Purple agent exposes A2A endpoints
-- Purple agent can be evaluated by GreenAgent
-- `docker build -t purple-agent examples/purple-agent` succeeds
-- Simple coordination scenario demonstrable
-
-**Files:** examples/purple-agent/
-
----
-
-### STORY-012: Register on AgentBeats platform
-
-Register GreenAgent on agentbeats.org developer platform.
-
-**Acceptance Criteria:**
-
-- Agent registered on <https://agentbeats.org>
-- Agent credentials/API tokens obtained (if applicable)
-- Agent metadata (name, description, repo URL) configured
-- Registration confirmation received
-
-**Files:** docs/PLATFORM_SETUP.md (new)
-
----
-
-### STORY-013: Publish to leaderboard
-
-Create leaderboard repo and publish baseline evaluation results.
-
-**Reference:** [AgentBeats Leaderboard Tutorial](https://docs.agentbeats.dev/tutorial/)
-
-**Acceptance Criteria:**
-
-- GitHub leaderboard repo created from [official template](https://github.com/RDI-Foundation/leaderboard-template)
-- Repo URL added to registered green agent on agentbeats.dev
-- DuckDB query configured for result display
-- Baseline purple agent evaluated, results JSON submitted to leaderboard repo
-- Leaderboard visible at agentbeats.dev showing baseline results
-
-**Files:** docs/PLATFORM_SETUP.md, leaderboard repo (external)
-
----
-
-### STORY-014: Document reproducibility
-
-Demonstrate consistent evaluation results across multiple runs.
-
-**Acceptance Criteria:**
-
-- Run same evaluation configuration 3+ times
-- Document results in `docs/REPRODUCIBILITY.md`
-- Show variance analysis (mean, std dev, range)
-- Results demonstrate consistency (low variance in key metrics)
-- Include timestamps, configurations, and raw outputs
-
-**Files:** docs/REPRODUCIBILITY.md (new)
-
----
-
-### STORY-015: Create submission artifacts
-
-Create abstract and demo video for submission.
-
-**Acceptance Criteria:**
-
-- Abstract written (150-300 words) describing evaluation tasks
-- Demo video recorded (max 3 minutes)
-- Video demonstrates: agent startup, evaluation flow, results interpretation
-- Video uploaded and accessible (YouTube/Vimeo/etc)
-- Abstract and video links added to README.md
-
-**Files:** docs/ABSTRACT.md (new), README.md
+- Real-time streaming evaluation
+- Persistent metrics storage (database)
+- Metrics visualization UI
+- Custom LLM fine-tuning

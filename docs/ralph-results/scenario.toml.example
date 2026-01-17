@@ -15,8 +15,10 @@ image = "ghcr.io/qte77/rdi-agentx-agentbeats-competition/green-agent:latest"
 # IMPORTANT: Use ${VARIABLE_NAME} syntax for secrets stored in GitHub Secrets
 # Never commit actual API keys or secrets to this file!
 
-# Example: If using Claude for LLM judge evaluation
-# ANTHROPIC_API_KEY = "${ANTHROPIC_API_KEY}"
+# LLM API Configuration (optional - uses rule-based fallback if not set)
+AGENTBEATS_LLM_API_KEY = "${AGENTBEATS_LLM_API_KEY}"
+AGENTBEATS_LLM_BASE_URL = "https://api.openai.com/v1"  # OpenAI-compatible endpoint
+AGENTBEATS_LLM_MODEL = "gpt-4o-mini"  # Model to use for evaluation
 
 # Example: Custom configuration
 # EVALUATION_TIMEOUT = "300"

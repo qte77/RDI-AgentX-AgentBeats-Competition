@@ -16,7 +16,7 @@ reproducible results** for all assessment metrics across multiple runs.
 ## Test Configuration
 
 | Parameter | Value |
-|-----------|-------|
+| --------- | ----- |
 | Test Date | 2026-01-15 |
 | Agent Under Test | Purple Agent (baseline demo agent) |
 | Agent URL | `http://localhost:9010` |
@@ -36,22 +36,25 @@ The same three messages were sent in each run:
 
 ### Run-by-Run Data
 
-| Run | Duration (s) | Graph Nodes | Graph Edges | Avg Centrality | Quality Score | Similarity Score |
-|-----|--------------|-------------|-------------|----------------|---------------|------------------|
-| 1   | 0.1951       | 2           | 1           | 0.0            | 0.0           | 1.0              |
-| 2   | 0.0385       | 2           | 1           | 0.0            | 0.0           | 1.0              |
-| 3   | 0.0618       | 2           | 1           | 0.0            | 0.0           | 1.0              |
-| 4   | 0.0492       | 2           | 1           | 0.0            | 0.0           | 1.0              |
-| 5   | 0.0305       | 2           | 1           | 0.0            | 0.0           | 1.0              |
+| Run | Duration | Nodes | Edges | Centrality | Quality | Similarity |
+| --- | -------- | ----- | ----- | ---------- | ------- | ---------- |
+| 1   | 0.1951   | 2     | 1     | 0.0        | 0.0     | 1.0        |
+| 2   | 0.0385   | 2     | 1     | 0.0        | 0.0     | 1.0        |
+| 3   | 0.0618   | 2     | 1     | 0.0        | 0.0     | 1.0        |
+| 4   | 0.0492   | 2     | 1     | 0.0        | 0.0     | 1.0        |
+| 5   | 0.0305   | 2     | 1     | 0.0        | 0.0     | 1.0        |
+
+*Latency evaluator was implemented after this reproducibility test
+(STORY-008)
 
 ### Variance Analysis
 
 #### Tier 1: Graph Metrics (Structural Analysis)
 
-**Perfect Reproducibility (0% variance)**
+##### Graph Metrics: Perfect Reproducibility (0% variance)
 
 | Metric | Mean | Std Dev | Min | Max | Range | CV% |
-|--------|------|---------|-----|-----|-------|-----|
+| -------------- | ---- | ------- | --- | --- | ----- | ----- |
 | Node Count | 2.0 | 0.0 | 2 | 2 | 0 | 0.00% |
 | Edge Count | 1.0 | 0.0 | 1 | 1 | 0 | 0.00% |
 | Avg Centrality | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | N/A |
@@ -63,10 +66,10 @@ algorithm.
 
 #### Tier 2: LLM Judge (Coordination Quality)
 
-**Perfect Reproducibility (0% variance)**
+##### LLM Judge: Perfect Reproducibility (0% variance)
 
 | Metric | Mean | Std Dev | Min | Max | Range | CV% |
-|--------|------|---------|-----|-----|-------|-----|
+| ------------- | ---- | ------- | --- | --- | ----- | --- |
 | Quality Score | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | N/A |
 
 **Interpretation**: The LLM judge produced identical assessments across all
@@ -75,22 +78,39 @@ capabilities, resulting in a consistent score of 0.0.
 
 #### Tier 3: Text Metrics (Response Similarity)
 
-**Perfect Reproducibility (0% variance)**
+##### Text Metrics: Perfect Reproducibility (0% variance)
 
 | Metric | Mean | Std Dev | Min | Max | Range | CV% |
-|--------|------|---------|-----|-----|-------|-----|
+| ---------------- | ---- | ------- | --- | --- | ----- | ----- |
 | Similarity Score | 1.0 | 0.0 | 1.0 | 1.0 | 0.0 | 0.00% |
 
 **Interpretation**: The Purple Agent generates identical responses to identical
 inputs, resulting in perfect similarity scores (1.0) across all evaluations.
 
+#### Tier 1: Latency Metrics (Performance Analysis)
+
+**Note**: Latency evaluator (STORY-008) was implemented after this
+reproducibility test. Future reproducibility runs will include:
+
+| Metric            | Expected Behavior                     |
+|-------------------|---------------------------------------|
+| Avg Latency (ms)  | Baseline response time measurement    |
+| P50 Latency (ms)  | Median latency (should be stable)     |
+| P95 Latency (ms)  | 95th percentile (detects outliers)    |
+| P99 Latency (ms)  | 99th percentile (detects worst-case)  |
+| Slowest Agent URL | Identifies performance bottlenecks    |
+
+**Expected Reproducibility**: Latency metrics show timing variance (similar to
+execution duration) but should be consistent in relative ordering and agent
+identification.
+
 #### Execution Duration
 
-**Expected Variance (90.86% CV)**
+##### Expected Variance (90.86% CV)
 
-| Metric | Mean | Std Dev | Min | Max | Range | CV% |
-|--------|------|---------|-----|-----|-------|-----|
-| Duration (s) | 0.075 | 0.068 | 0.031 | 0.195 | 0.165 | 90.86% |
+| Metric       | Mean  | Std Dev | Min   | Max   | Range | CV%    |
+| ------------ | ----- | ------- | ----- | ----- | ----- | ------ |
+| Duration (s) | 0.075 | 0.068   | 0.031 | 0.195 | 0.165 | 90.86% |
 
 **Interpretation**: Execution time varies due to system-level factors (CPU
 scheduling, I/O operations, network latency). This variance is **expected and
@@ -110,7 +130,7 @@ The CV measures relative variability as `(std_dev / mean) * 100%`:
 ### Results Summary
 
 | Metric Category | CV% | Assessment |
-|----------------|-----|------------|
+| -------------------------- | ------ | -------------------------- |
 | Graph Node Count | 0.00% | Perfect reproducibility |
 | Graph Edge Count | 0.00% | Perfect reproducibility |
 | Graph Avg Centrality | 0.00% | Perfect reproducibility |
@@ -161,7 +181,7 @@ To ensure reproducible evaluations:
 
 Full reproducibility test results are available at:
 
-```
+```text
 reproducibility-results/reproducibility-20260115-184659.json
 ```
 
@@ -183,7 +203,8 @@ uv run python -m purpleagent.server --port 9010 &
 
 # 2. Run reproducibility test
 cd ../..
-PYTHONPATH=src uv run python scripts/test_reproducibility.py http://localhost:9010 5
+PYTHONPATH=src uv run python scripts/test_reproducibility.py \
+  http://localhost:9010 5
 
 # 3. View results
 cat reproducibility-results/reproducibility-*.json
@@ -224,7 +245,7 @@ When std dev = 0.0 (perfect consistency):
 
 ### Software Versions
 
-```
+```text
 Python: 3.13
 a2a-sdk: 0.3.20
 networkx: 3.0+
@@ -244,11 +265,13 @@ Test was conducted on:
 1. **Messenger** (`src/agentbeats/messenger.py`): A2A client with trace capture
 2. **GraphEvaluator** (`src/agentbeats/evals/graph.py`): NetworkX-based
    structural analysis
-3. **LLMJudge** (`src/agentbeats/evals/llm_judge.py`): Coordination quality
-   assessment
-4. **TextMetrics** (`src/agentbeats/evals/text_metrics.py`): Response
+3. **LatencyEvaluator** (`src/agentbeats/evals/latency.py`): Response time
+   performance analysis
+4. **LLMJudge** (`src/agentbeats/evals/llm_judge.py`): Coordination quality
+   assessment with real LLM API
+5. **TextMetrics** (`src/agentbeats/evals/text_metrics.py`): Response
    similarity scoring
-5. **Agent Orchestrator** (`src/agentbeats/agent.py`): End-to-end evaluation
+6. **Agent Orchestrator** (`src/agentbeats/agent.py`): End-to-end evaluation
    pipeline
 
 ---

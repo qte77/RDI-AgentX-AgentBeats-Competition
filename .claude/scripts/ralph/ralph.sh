@@ -163,6 +163,7 @@ Completed by Ralph loop iteration.
 Passes quality checks: make validate
 
 Co-Authored-By: Claude <noreply@anthropic.com>" || true
+}
 
 # Main loop
 main() {

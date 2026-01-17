@@ -1,7 +1,7 @@
 ---
 title: AgentBeats Competition - Requirements Analysis
 version: 1.0
-applies-to: all-agents
+applies-to: Agents and humans
 purpose: Official competition requirements, compliance status, and execution strategy
 created: 2026-01-15
 ---
@@ -33,9 +33,8 @@ src/
 └── messenger.py   # A2A messaging utilities
 
 tests/
-└── test_agent.py  # A2A conformance tests
-
-Dockerfile         # Containerization
+└── test_agent.py  # A2A conformance test
+ Dockerfile         # Containerization
 .github/workflows/test-and-publish.yml  # CI/CD (optional)
 pyproject.toml     # Dependencies
 ```
@@ -165,10 +164,10 @@ PRD.md is **fully compliant** with AgentBeats competition requirements:
 
 | Risk | Mitigation |
 | ---- | ---------- |
-| **Platform registration blocked** | Start STORY-012 early; check docs.agentbeats.org |
-| **Leaderboard API unclear** | Review platform docs; contact support if needed |
-| **Docker build failures** | Test incrementally; explicit `linux/amd64` |
-| **Purple agent complexity** | Keep minimal (single file, echo scenario) |
+| **Platform registration blocked** | Start STORY-012 early |
+| **Leaderboard API unclear** | Review platform docs |
+| **Docker build failures** | Test incrementally |
+| **Purple agent complexity** | Keep minimal |
 
 ---
 
@@ -262,10 +261,12 @@ Based on [competition requirements](https://rdi.berkeley.edu/agentx-agentbeats):
 - [x] **Abstract** - Brief description of evaluation tasks
 - [x] **Docker Image** - Runs end-to-end without manual intervention
 - [ ] **Baseline Purple Agent(s)** - A2A-compatible demo agents
-- [ ] **Reproducibility Evidence** - Multiple evaluation runs (3+) with consistent results documented
+- [ ] **Reproducibility Evidence** - Multiple evaluation runs (3+) with
+  consistent results documented
 - [ ] **Demo Video** - Up to 3 minutes
 - [ ] **Submission Form** - Complete by 11:59pm PT TODAY
-- [ ] **Green Agent Leaderboard** - Results visible on agentbeats.dev for baseline purple agents
+- [ ] **Green Agent Leaderboard** - Results visible on agentbeats.dev for
+  baseline purple agents
 
 ---
 

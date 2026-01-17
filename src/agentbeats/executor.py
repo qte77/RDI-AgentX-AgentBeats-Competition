@@ -8,6 +8,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from agentbeats.evals.graph import GraphEvaluator
+from agentbeats.evals.latency import LatencyEvaluator
 from agentbeats.evals.llm_judge import LLMJudge
 from agentbeats.evals.text_metrics import TextMetrics
 from agentbeats.messenger import Messenger, TraceData
@@ -65,6 +66,9 @@ class Executor:
             message="Task created",
         )
 
+        # Initialize fresh messenger for this task
+        messenger = Messenger()
+
         try:
             # Transition to working state
             self._tasks[task_id] = TaskStatus(
@@ -73,9 +77,6 @@ class Executor:
                 progress=0.0,
                 message="Starting evaluation",
             )
-
-            # Initialize fresh messenger for this task
-            messenger = Messenger()
 
             # Collect traces if messages provided
             if messages:
@@ -119,14 +120,24 @@ class Executor:
             self._tasks[task_id] = TaskStatus(
                 task_id=task_id,
                 state="working",
-                progress=0.9,
+                progress=0.85,
                 message="Running Tier 3 text metrics evaluation",
             )
             tier3_result = await self._evaluate_tier3(traces)
 
+            # Coordinate Tier 1: Latency evaluation
+            self._tasks[task_id] = TaskStatus(
+                task_id=task_id,
+                state="working",
+                progress=0.95,
+                message="Running Tier 1 latency evaluation",
+            )
+            tier1_latency = await self._evaluate_latency(traces)
+
             # Aggregate results
             results = {
                 "tier1_graph": tier1_result,
+                "tier1_latency": tier1_latency,
                 "tier2_llm_judge": tier2_result,
                 "tier3_text_metrics": tier3_result,
             }
@@ -165,6 +176,10 @@ class Executor:
                 state="failed",
                 duration_seconds=duration,
             )
+
+        finally:
+            # Always cleanup A2A clients, even on error
+            await messenger.close()
 
     async def _evaluate_tier1(self, traces: list[TraceData]) -> dict[str, Any]:
         """Run Tier 1 graph evaluation.
@@ -238,6 +253,23 @@ class Executor:
         except Exception as e:
             # Return error information if evaluation fails
             return {"error": str(e), "similarity_score": 0.0}
+
+    async def _evaluate_latency(self, traces: list[TraceData]) -> dict[str, Any]:
+        """Run latency metrics evaluation.
+
+        Args:
+            traces: List of captured interaction traces
+
+        Returns:
+            Dictionary with latency metrics
+        """
+        try:
+            evaluator = LatencyEvaluator()
+            metrics = evaluator.evaluate(traces)
+            return metrics.model_dump()
+        except Exception as e:
+            # Return error information if evaluation fails
+            return {"error": str(e), "metrics": None}
 
     def get_status(self, task_id: str) -> TaskStatus | None:
         """Get the current status of a task.

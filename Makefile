@@ -5,7 +5,11 @@
 
 .SILENT:
 .ONESHELL:
-.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli
+.PHONY: setup_dev setup_dev_full setup_claude_code setup_markdownlint run_markdownlint run_cli \
+        ruff test_all coverage_all type_check validate quick_validate \
+        ralph_init ralph ralph_status ralph_clean reorganize_prd \
+        run_agent build_agent test_agent push_agent publish_agent \
+        help
 .DEFAULT_GOAL := help
 
 
@@ -20,9 +24,8 @@ setup_dev:  ## Install uv and deps, Download and start Ollama
 	$(MAKE) -s setup_claude_code
 	$(MAKE) -s setup_markdownlint
 	
-setup_dev_full: ## Complete dev setup including Opik tracing stack
+setup_dev_full: ## Complete dev setup
 	$(MAKE) -s setup_dev
-	$(MAKE) -s setup_opik
 
 setup_claude_code:  ## Setup claude code CLI, node.js and npm have to be present
 	echo "Setting up Claude Code CLI ..."
@@ -83,54 +86,6 @@ quick_validate:  ## Fast development cycle validation
 	-$(MAKE) -s type_check
 	echo "Quick validation completed (check output for any failures)"
 
-# MARK: opik
-
-setup_opik:  ## Complete Opik setup (start services + configure environment)
-	echo "Setting up Opik tracing stack..."
-	$(MAKE) start_opik
-	echo "Waiting for services to be healthy..."
-	sleep 20
-	$(MAKE) setup_opik_env
-	echo "Opik setup complete!"
-
-setup_opik_env:  ## Setup Opik environment variables for local development
-	echo "Setting up Opik environment variables ..."
-	echo "export OPIK_URL_OVERRIDE=http://localhost:8080" >> ~/.bashrc  # do not send to comet.com/api
-	echo "export OPIK_WORKSPACE=peerread-evaluation" >> ~/.bashrc
-	echo "export OPIK_PROJECT_NAME=peerread-evaluation" >> ~/.bashrc
-	echo "Environment variables added to ~/.bashrc"
-	echo "Run: source ~/.bashrc"
-
-start_opik:  ## Start local Opik tracing with ClickHouse database
-	# https://github.com/comet-ml/opik/blob/main/deployment/docker-compose/docker-compose.yaml
-	# https://www.comet.com/docs/opik/self-host/local_deployment/
-	echo "Starting Opik stack with ClickHouse ..."
-	docker-compose -f docker-compose.opik.yaml up -d
-	echo "Frontend: http://localhost:5173"
-	echo "Backend API: http://localhost:8080"
-	echo "ClickHouse: http://localhost:8123"
-
-stop_opik:  ## Stop local Opik tracing stack
-	echo "Stopping Opik stack ..."
-	docker-compose -f docker-compose.opik.yaml down
-
-clean_opik:  ## Stop Opik and remove all trace data (WARNING: destructive)
-	echo "WARNING: This will remove all Opik trace data!"
-	echo "Press Ctrl+C to cancel, Enter to continue..."
-	read
-	docker-compose -f docker-compose.opik.yaml down -v
-
-status_opik:  ## Check Opik services health status
-	echo "Checking Opik services status ..."
-	docker-compose -f docker-compose.opik.yaml ps
-	echo "API Health:"
-	curl -f http://localhost:8080/health-check 2>/dev/null && \
-		echo "Opik API healthy" || echo "Opik API not responding"
-	echo "ClickHouse:"
-	curl -s http://localhost:8123/ping 2>/dev/null && \
-		echo "ClickHouse healthy" || echo "ClickHouse not responding"
-
-
 # MARK: ralph
 
 
@@ -164,15 +119,53 @@ ralph_clean:  ## Reset Ralph state (WARNING: removes prd.json and progress.txt)
 	rm -f docs/ralph/prd.json docs/ralph/progress.txt
 	echo "Ralph state cleaned. Run 'make ralph_init' to reinitialize."
 
+reorganize_prd:  ## Archive current PRD and activate new one. Usage: make reorganize_prd NEW_PRD=path/to/new.md [VERSION=2]
+	if [ -z "$(NEW_PRD)" ]; then
+		echo "Error: NEW_PRD parameter required"
+		echo "Usage: make reorganize_prd NEW_PRD=docs/PRD-New.md [VERSION=2]"
+		exit 1
+	fi
+	VERSION_ARG=""
+	if [ -n "$(VERSION)" ]; then
+		VERSION_ARG="-v $(VERSION)"
+	fi
+	bash scripts/reorganize_prd.sh $$VERSION_ARG $(NEW_PRD)
+
 
 # MARK: agentbeats
 
+# Docker image variables for RDI AgentBeats GreenAgent
+# Override GITHUB_USER for your own registry: make publish_agent GITHUB_USER=yourname
+GITHUB_USER ?= qte77
+IMAGE_NAME = agentbeats-greenagent
+VERSION = 0.0.0
+GHCR_IMAGE = ghcr.io/$(GITHUB_USER)/$(IMAGE_NAME)
 
 run_agent:  ## Start AgentBeats server. Usage: make run_agent or make run_agent ARGS="--port 8080"
 	PYTHONPATH=src uv run python -m agentbeats.server $(ARGS)
 
-build_agent:  ## Build AgentBeats Docker image
-	docker build -t green-agent .
+build_agent:  ## Build RDI AgentBeats GreenAgent Docker image with GHCR tags
+	docker build --platform linux/amd64 \
+		--label "org.opencontainers.image.title=GraphJudge-RDI-AgentBeats-GreenAgent" \
+		--label "org.opencontainers.image.description=Graph-based coordination evaluator for AgentBeats competition" \
+		--label "org.opencontainers.image.version=$(VERSION)" \
+		--label "org.opencontainers.image.url=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
+		--label "org.opencontainers.image.source=https://github.com/$(GITHUB_USER)/RDI-AgentX-AgentBeats-Competition" \
+		--label "rdi.agentbeats.agent-type=green" \
+		--label "rdi.agentbeats.competition=agentx-2025" \
+		--label "purpose=PulseMetricComplianceCoordinationAuscultatorEngine" \
+		-t $(GHCR_IMAGE):latest \
+		-t $(GHCR_IMAGE):$(VERSION) \
+		.
+
+push_agent:  ## Push RDI AgentBeats GreenAgent image to GitHub Container Registry
+	docker push $(GHCR_IMAGE):latest
+	docker push $(GHCR_IMAGE):$(VERSION)
+
+publish_agent:  ## Build and push RDI AgentBeats GreenAgent to GHCR. Usage: make publish_agent [GITHUB_USER=yourname]
+	$(MAKE) -s build_agent
+	$(MAKE) -s push_agent
+	echo "Published RDI AgentBeats GreenAgent: $(GHCR_IMAGE):latest and $(GHCR_IMAGE):$(VERSION)"
 
 test_agent:  ## Run agentbeats tests
 	uv run pytest tests/

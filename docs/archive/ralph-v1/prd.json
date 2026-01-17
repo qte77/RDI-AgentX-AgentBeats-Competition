@@ -1,0 +1,368 @@
+{
+  "project": "AgentBeats-GreenAgent",
+  "source": "docs/PRD.md",
+  "generated": "2026-01-15T00:00:00Z",
+  "description": "Task tracking for Ralph loop autonomous execution of AgentBeats assessor agent",
+  "stories": [
+    {
+      "id": "STORY-001",
+      "title": "Create pyproject.toml with dependencies",
+      "description": "Initialize Python project with A2A and graph dependencies",
+      "acceptance": [
+        "pyproject.toml exists with a2a-sdk[http-server]>=0.3.20",
+        "pyproject.toml contains networkx>=3.0, pydantic>=2.0, httpx>=0.27",
+        "uv sync succeeds",
+        "uv run python -c \"import a2a, networkx\" succeeds"
+      ],
+      "files": [
+        "pyproject.toml"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T00:00:00Z"
+    },
+    {
+      "id": "STORY-002-TEST",
+      "title": "Write messenger tests",
+      "description": "Write tests defining messenger contract (test file creation = passing)",
+      "acceptance": [
+        "tests/test_messenger.py exists with focused tests",
+        "Tests define expected behavior for Messenger.talk_to_agent()",
+        "Tests define expected behavior for Messenger.get_traces()",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_messenger.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T17:50:48Z"
+    },
+    {
+      "id": "STORY-002-IMPL",
+      "title": "Implement messenger with trace capture",
+      "description": "Implement messenger.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/messenger.py exists",
+        "uv run pytest tests/test_messenger.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/__init__.py",
+        "src/agentbeats/messenger.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T17:52:21Z"
+    },
+    {
+      "id": "STORY-003-TEST",
+      "title": "Write graph evaluator tests",
+      "description": "Write tests defining graph evaluator contract",
+      "acceptance": [
+        "tests/test_graph.py exists with focused tests",
+        "Tests define expected behavior for GraphEvaluator.build_graph(traces)",
+        "Tests define expected metrics: node_count, edge_count, centrality",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_graph.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T17:54:18Z"
+    },
+    {
+      "id": "STORY-003-IMPL",
+      "title": "Implement graph evaluator (Tier 1)",
+      "description": "Implement graph.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/evals/graph.py exists",
+        "uv run pytest tests/test_graph.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/evals/__init__.py",
+        "src/agentbeats/evals/graph.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T17:57:02Z"
+    },
+    {
+      "id": "STORY-004-TEST",
+      "title": "Write LLM judge tests",
+      "description": "Write tests defining LLM judge contract",
+      "acceptance": [
+        "tests/test_llm_judge.py exists with focused tests",
+        "Tests define expected behavior for LLMJudge.evaluate(traces)",
+        "Tests use mocks for LLM calls (no real API needed)",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_llm_judge.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T17:59:01Z"
+    },
+    {
+      "id": "STORY-004-IMPL",
+      "title": "Implement LLM judge evaluator (Tier 2)",
+      "description": "Implement llm_judge.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/evals/llm_judge.py exists",
+        "uv run pytest tests/test_llm_judge.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/evals/llm_judge.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:00:59Z"
+    },
+    {
+      "id": "STORY-005-TEST",
+      "title": "Write text metrics tests",
+      "description": "Write tests defining text metrics contract",
+      "acceptance": [
+        "tests/test_text_metrics.py exists with focused tests",
+        "Tests define expected behavior for TextMetrics.evaluate(response, reference)",
+        "Tests cover similarity score range (0-1)",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_text_metrics.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:03:05Z"
+    },
+    {
+      "id": "STORY-005-IMPL",
+      "title": "Implement text metrics plugin (Tier 3)",
+      "description": "Implement text_metrics.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/evals/text_metrics.py exists",
+        "uv run pytest tests/test_text_metrics.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/evals/text_metrics.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:04:12Z"
+    },
+    {
+      "id": "STORY-006-TEST",
+      "title": "Write executor tests",
+      "description": "Write tests defining A2A executor contract",
+      "acceptance": [
+        "tests/test_executor.py exists with focused tests",
+        "Tests define expected behavior for Executor.execute()",
+        "Tests define task lifecycle: pending → working → completed",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_executor.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:07:12Z"
+    },
+    {
+      "id": "STORY-006-IMPL",
+      "title": "Implement executor module",
+      "description": "Implement executor.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/executor.py exists",
+        "uv run pytest tests/test_executor.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/executor.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:08:51Z"
+    },
+    {
+      "id": "STORY-007-TEST",
+      "title": "Write agent orchestrator tests",
+      "description": "Write tests defining agent orchestrator contract",
+      "acceptance": [
+        "tests/test_agent.py exists with focused tests",
+        "Tests define EvalRequest model structure and validation",
+        "Tests define expected Agent.run() orchestration flow",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_agent.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:11:24Z"
+    },
+    {
+      "id": "STORY-007-IMPL",
+      "title": "Implement agent orchestrator",
+      "description": "Implement agent.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/agent.py exists",
+        "Agent starts with fresh state per assessment",
+        "Uses task_id to namespace temporary resources",
+        "uv run pytest tests/test_agent.py passes",
+        "make type_check passes"
+      ],
+      "files": [
+        "src/agentbeats/agent.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:13:04Z"
+    },
+    {
+      "id": "STORY-008-TEST",
+      "title": "Write server tests",
+      "description": "Write tests defining A2A server contract",
+      "acceptance": [
+        "tests/test_server.py exists with focused tests",
+        "Tests define AgentCard endpoint response structure",
+        "Tests define server startup and health behavior",
+        "Test file is syntactically valid Python"
+      ],
+      "files": [
+        "tests/test_server.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:15:29Z"
+    },
+    {
+      "id": "STORY-008-IMPL",
+      "title": "Implement server entry point",
+      "description": "Implement server.py to pass tests",
+      "acceptance": [
+        "src/agentbeats/server.py exists",
+        "Server accepts --host, --port, --card-url CLI args",
+        "AgentCard at /.well-known/agent.json contains: name, description, skills",
+        "uv run pytest tests/test_server.py passes",
+        "curl localhost:9009/.well-known/agent.json returns A2A-compliant JSON"
+      ],
+      "files": [
+        "src/agentbeats/server.py"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:23:27Z"
+    },
+    {
+      "id": "STORY-009",
+      "title": "Create Dockerfile",
+      "description": "Create container for AgentBeats deployment",
+      "acceptance": [
+        "Dockerfile exists at project root",
+        "Build targets linux/amd64 architecture",
+        "ENTRYPOINT accepts --host, --port, --card-url args",
+        "docker build -t green-agent . succeeds",
+        "docker run -p 9009:9009 green-agent responds to agent card request"
+      ],
+      "files": [
+        "Dockerfile"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:26:19Z"
+    },
+    {
+      "id": "STORY-010",
+      "title": "Add Makefile targets",
+      "description": "Add convenience targets for development",
+      "acceptance": [
+        "make run_agent starts server",
+        "make build_agent builds Docker",
+        "make test_agent runs agentbeats tests",
+        "All targets work without errors"
+      ],
+      "files": [
+        "Makefile"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:29:20Z"
+    },
+    {
+      "id": "STORY-011",
+      "title": "Create baseline purple agent",
+      "description": "Create A2A-compatible demo agent for submission",
+      "acceptance": [
+        "examples/purple-agent/ directory exists",
+        "Purple agent exposes A2A endpoints",
+        "Purple agent can be evaluated by GreenAgent",
+        "docker build -t purple-agent examples/purple-agent succeeds",
+        "Simple coordination scenario demonstrable"
+      ],
+      "files": [
+        "examples/purple-agent/"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:37:33Z"
+    },
+    {
+      "id": "STORY-012",
+      "title": "Register on AgentBeats platform",
+      "description": "Register GreenAgent on agentbeats.org developer platform",
+      "acceptance": [
+        "Agent registered on https://agentbeats.org",
+        "Agent credentials/API tokens obtained (if applicable)",
+        "Agent metadata (name, description, repo URL) configured",
+        "Registration confirmation received"
+      ],
+      "files": [
+        "docs/PLATFORM_SETUP.md"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:40:05Z"
+    },
+    {
+      "id": "STORY-013",
+      "title": "Publish to leaderboard",
+      "description": "Create leaderboard repo and publish baseline evaluation results",
+      "acceptance": [
+        "GitHub leaderboard repo created from official template",
+        "Repo URL added to registered green agent on agentbeats.dev",
+        "DuckDB query configured for result display",
+        "Baseline purple agent evaluated, results JSON submitted to leaderboard repo",
+        "Leaderboard visible at agentbeats.dev showing baseline results"
+      ],
+      "files": [
+        "docs/PLATFORM_SETUP.md",
+        "scripts/evaluate_purple_agent.py",
+        "docs/leaderboard_query.sql",
+        "docs/scenario.toml.example"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:45:08Z"
+    },
+    {
+      "id": "STORY-014",
+      "title": "Document reproducibility",
+      "description": "Demonstrate consistent evaluation results across multiple runs",
+      "acceptance": [
+        "Run same evaluation configuration 3+ times",
+        "Document results in docs/REPRODUCIBILITY.md",
+        "Show variance analysis (mean, std dev, range)",
+        "Results demonstrate consistency (low variance in key metrics)",
+        "Include timestamps, configurations, and raw outputs"
+      ],
+      "files": [
+        "docs/REPRODUCIBILITY.md"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:49:38Z"
+    },
+    {
+      "id": "STORY-015",
+      "title": "Create submission artifacts",
+      "description": "Create abstract and demo video for submission",
+      "acceptance": [
+        "Abstract written (150-300 words) describing evaluation tasks",
+        "Demo video recorded (max 3 minutes)",
+        "Video demonstrates: agent startup, evaluation flow, results interpretation",
+        "Video uploaded and accessible (YouTube/Vimeo/etc)",
+        "Abstract and video links added to README.md"
+      ],
+      "files": [
+        "docs/ABSTRACT.md",
+        "README.md"
+      ],
+      "passes": true,
+      "completed_at": "2026-01-15T18:51:45Z"
+    }
+  ]
+}
