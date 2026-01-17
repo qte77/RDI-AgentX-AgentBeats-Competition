@@ -1,9 +1,10 @@
 """Tests for LLM judge evaluator module defining contract for qualitative assessment."""
 
 import os
+from unittest.mock import AsyncMock, Mock, patch
+
 import pytest
 from pydantic import BaseModel
-from unittest.mock import AsyncMock, Mock, patch
 
 
 class TestLLMJudgeEvaluate:
@@ -54,7 +55,7 @@ class TestLLMJudgeEvaluate:
         from agentbeats.evals.llm_judge import LLMJudge
 
         judge = LLMJudge()
-        empty_traces: list = []
+        _empty_traces: list = []
 
         # When/Then: Should handle empty input without errors
         assert hasattr(judge, "evaluate")
@@ -371,7 +372,7 @@ class TestLLMClientConfiguration:
 
         # When: API key is set
         with patch.dict(os.environ, {"AGENTBEATS_LLM_API_KEY": "test-key"}):
-            judge_with_key = LLMJudge()
+            _judge_with_key = LLMJudge()
 
             # Then: Should be able to determine API is configured
             # This helps decide whether to use LLM or fallback logic
@@ -610,7 +611,7 @@ class TestLLMPromptContract:
     def test_prompt_matches_llm_judgment_schema(self) -> None:
         """Test that prompt describes fields matching LLMJudgment schema."""
         # Given: LLMJudge and sample traces
-        from agentbeats.evals.llm_judge import LLMJudge, LLMJudgment
+        from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
 
         judge = LLMJudge()
@@ -745,10 +746,12 @@ class TestLLMAPIFallback:
     async def test_llm_api_call_with_valid_key(self) -> None:
         """Test that LLM API is called when API key is set."""
         # Given: LLMJudge with API key configured and mocked OpenAI client
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
 
         traces = [
             TraceData(
@@ -798,10 +801,12 @@ class TestLLMAPIFallback:
     async def test_llm_response_parsing_into_judgment(self) -> None:
         """Test that LLM JSON response is parsed into LLMJudgment object."""
         # Given: LLMJudge with mocked API returning valid JSON
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge, LLMJudgment
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
 
         traces = [
             TraceData(
@@ -849,11 +854,12 @@ class TestLLMAPIFallback:
     async def test_fallback_when_api_fails(self) -> None:
         """Test that fallback logic is used when API call fails."""
         # Given: LLMJudge with API key but API call fails
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
-        import logging
 
         traces = [
             TraceData(
@@ -871,9 +877,7 @@ class TestLLMAPIFallback:
             # When: API call raises an exception
             with patch.object(AsyncOpenAI, "__init__", return_value=None):
                 mock_client = AsyncMock()
-                mock_client.chat.completions.create = AsyncMock(
-                    side_effect=Exception("API connection timeout")
-                )
+                mock_client.chat.completions.create = AsyncMock(side_effect=Exception("API connection timeout"))
 
                 with patch("agentbeats.evals.llm_judge.AsyncOpenAI", return_value=mock_client):
                     # Then: Should fall back to rule-based logic without raising error
@@ -919,9 +923,9 @@ class TestLLMAPIFallback:
     async def test_warning_logged_when_using_fallback(self) -> None:
         """Test that warning is logged when using fallback (not error)."""
         # Given: LLMJudge without API key and logger capture
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        import logging
 
         traces = [
             TraceData(
@@ -951,10 +955,12 @@ class TestLLMAPIFallback:
     async def test_warning_logged_when_api_call_fails(self) -> None:
         """Test that warning is logged when API call fails and fallback is used."""
         # Given: LLMJudge with API key but failing API
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
 
         traces = [
             TraceData(
@@ -972,12 +978,10 @@ class TestLLMAPIFallback:
             # When: API fails and we capture logs
             with patch.object(AsyncOpenAI, "__init__", return_value=None):
                 mock_client = AsyncMock()
-                mock_client.chat.completions.create = AsyncMock(
-                    side_effect=Exception("API timeout")
-                )
+                mock_client.chat.completions.create = AsyncMock(side_effect=Exception("API timeout"))
 
                 with patch("agentbeats.evals.llm_judge.AsyncOpenAI", return_value=mock_client):
-                    with patch("logging.warning") as mock_warning:
+                    with patch("logging.warning") as _mock_warning:
                         # Then: Should log warning about using fallback
                         result = await judge.evaluate(traces)
 
@@ -989,10 +993,12 @@ class TestLLMAPIFallback:
     async def test_handles_invalid_json_response(self) -> None:
         """Test that invalid JSON response from API is handled gracefully."""
         # Given: LLMJudge with mocked API returning invalid JSON
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
 
         traces = [
             TraceData(
@@ -1030,10 +1036,12 @@ class TestLLMAPIFallback:
     async def test_handles_incomplete_json_response(self) -> None:
         """Test that incomplete JSON response (missing required fields) is handled."""
         # Given: LLMJudge with mocked API returning incomplete JSON
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
 
         traces = [
             TraceData(
@@ -1075,11 +1083,12 @@ class TestLLMAPIFallback:
     async def test_api_timeout_triggers_fallback(self) -> None:
         """Test that API timeout is handled gracefully with fallback."""
         # Given: LLMJudge with API that times out
+        from unittest.mock import AsyncMock, patch
+
+        from openai import AsyncOpenAI
+
         from agentbeats.evals.llm_judge import LLMJudge
         from agentbeats.messenger import TraceData
-        from openai import AsyncOpenAI
-        from unittest.mock import AsyncMock, patch
-        import asyncio
 
         traces = [
             TraceData(
@@ -1097,9 +1106,7 @@ class TestLLMAPIFallback:
             # When: API call times out
             with patch.object(AsyncOpenAI, "__init__", return_value=None):
                 mock_client = AsyncMock()
-                mock_client.chat.completions.create = AsyncMock(
-                    side_effect=asyncio.TimeoutError("Request timeout")
-                )
+                mock_client.chat.completions.create = AsyncMock(side_effect=TimeoutError("Request timeout"))
 
                 with patch("agentbeats.evals.llm_judge.AsyncOpenAI", return_value=mock_client):
                     # Then: Should fall back without error

@@ -439,8 +439,9 @@ class TestExecutorA2ACleanup:
     async def test_executor_calls_messenger_close(self) -> None:
         """Test that Executor.execute() calls await messenger.close() after collecting traces."""
         # Given: An Executor instance with mocked messenger
-        from agentbeats.executor import Executor
         from unittest.mock import AsyncMock, patch
+
+        from agentbeats.executor import Executor
 
         executor = Executor()
         task_id = "test-task-123"
@@ -469,8 +470,9 @@ class TestExecutorA2ACleanup:
     async def test_executor_calls_messenger_close_after_trace_collection(self) -> None:
         """Test that Executor calls messenger.close() after all traces are collected."""
         # Given: An Executor instance with mocked messenger
+        from unittest.mock import AsyncMock, patch
+
         from agentbeats.executor import Executor
-        from unittest.mock import AsyncMock, patch, call
 
         executor = Executor()
         task_id = "test-task-456"
@@ -507,8 +509,9 @@ class TestExecutorA2ACleanup:
     async def test_executor_calls_messenger_close_even_on_error(self) -> None:
         """Test that Executor calls messenger.close() even when task execution fails."""
         # Given: An Executor instance with mocked messenger that fails
-        from agentbeats.executor import Executor
         from unittest.mock import AsyncMock, patch
+
+        from agentbeats.executor import Executor
 
         executor = Executor()
         task_id = "test-task-789"

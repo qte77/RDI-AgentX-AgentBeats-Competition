@@ -1,6 +1,5 @@
 """Tests for text metrics evaluator module defining contract for response quality assessment."""
 
-import pytest
 from pydantic import BaseModel
 
 

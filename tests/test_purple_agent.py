@@ -1,7 +1,5 @@
 """Integration tests demonstrating purple agent evaluation by GreenAgent."""
 
-import pytest
-
 
 class TestPurpleAgentStructure:
     """Tests verifying purple agent project structure."""

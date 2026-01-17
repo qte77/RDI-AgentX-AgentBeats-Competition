@@ -1,5 +1,7 @@
 """Tests for messenger module defining contract for A2A agent communication and trace capture."""
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 from pydantic import BaseModel
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -15,8 +17,8 @@ class TestMessengerTalkToAgent:
         from agentbeats.messenger import Messenger
 
         messenger = Messenger()
-        agent_url = "http://localhost:9009"
-        message = "Test message"
+        _agent_url = "http://localhost:9009"
+        _message = "Test message"
 
         # When: We talk to the agent (will be mocked in implementation test)
         # Then: Should return a response string
@@ -224,9 +226,10 @@ class TestA2ASDKIntegration:
         message = "test message"
 
         # When/Then: Should use create_text_message_object(content=message)
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_factory.connect = AsyncMock(return_value=mock_client)
             mock_message_obj = MagicMock()
@@ -270,9 +273,10 @@ class TestA2ASDKIntegration:
         message = "test message"
 
         # When/Then: Should async iterate over task events to get response
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_factory.connect = AsyncMock(return_value=mock_client)
             mock_message_obj = MagicMock()
@@ -324,9 +328,10 @@ class TestA2ASDKIntegration:
         message2 = "second message"
 
         # When/Then: Should reuse same client for same agent URL
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_factory.connect = AsyncMock(return_value=mock_client)
             mock_create_message.return_value = MagicMock()
@@ -372,9 +377,10 @@ class TestA2ASDKIntegration:
         message = "test message"
 
         # When/Then: Should create separate clients for different URLs
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client1 = AsyncMock()
             mock_client2 = AsyncMock()
 
@@ -506,9 +512,10 @@ class TestTraceDataTaskIdField:
         expected_task_id = "task-abc-123"
 
         # When/Then: Should capture task.id in trace data
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_factory.connect = AsyncMock(return_value=mock_client)
             mock_create_message.return_value = MagicMock()
@@ -557,9 +564,10 @@ class TestTraceDataTaskIdField:
         message = "test message"
 
         # When/Then: Should handle missing task.id by setting to None
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_factory.connect = AsyncMock(return_value=mock_client)
             mock_create_message.return_value = MagicMock()
@@ -615,8 +623,9 @@ class TestMessengerA2ACleanup:
     async def test_messenger_close_is_async(self) -> None:
         """Test that Messenger.close() is an async method."""
         # Given: A messenger instance
-        from agentbeats.messenger import Messenger
         import inspect
+
+        from agentbeats.messenger import Messenger
 
         messenger = Messenger()
 
@@ -639,9 +648,10 @@ class TestMessengerA2ACleanup:
         agent_url2 = "http://localhost:9010"
 
         # When: We create cached clients by talking to agents
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client1 = AsyncMock()
             mock_client2 = AsyncMock()
             mock_client1.close = AsyncMock()
@@ -707,9 +717,10 @@ class TestMessengerA2ACleanup:
         agent_url = "http://localhost:9009"
 
         # When: We cache a client without close() method
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             # Explicitly remove close method
             if hasattr(mock_client, "close"):
@@ -760,9 +771,10 @@ class TestMessengerA2ACleanup:
         agent_url = "http://localhost:9009"
 
         # When: We cache a client and close multiple times
-        with patch("agentbeats.messenger.ClientFactory") as mock_factory, patch(
-            "agentbeats.messenger.create_text_message_object"
-        ) as mock_create_message:
+        with (
+            patch("agentbeats.messenger.ClientFactory") as mock_factory,
+            patch("agentbeats.messenger.create_text_message_object") as mock_create_message,
+        ):
             mock_client = AsyncMock()
             mock_client.close = AsyncMock()
 

@@ -1,6 +1,5 @@
 """Tests for graph evaluator module defining contract for coordination pattern analysis."""
 
-import pytest
 from pydantic import BaseModel
 
 
@@ -36,7 +35,7 @@ class TestGraphEvaluatorBuildGraph:
         from agentbeats.evals.graph import GraphEvaluator
 
         evaluator = GraphEvaluator()
-        empty_traces: list = []
+        _empty_traces: list = []
 
         # When/Then: Should handle empty input without errors
         assert hasattr(evaluator, "build_graph")
