@@ -1,6 +1,5 @@
 """Tests for latency evaluator module defining contract for latency metrics analysis."""
 
-import pytest
 from pydantic import BaseModel
 
 

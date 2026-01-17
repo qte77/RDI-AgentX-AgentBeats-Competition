@@ -6,7 +6,6 @@ import pytest
 @pytest.mark.integration
 def test_dockerfile_exists():
     """Verify Dockerfile exists at project root."""
-    import os
     from pathlib import Path
 
     dockerfile_path = Path(__file__).parent.parent / "Dockerfile"

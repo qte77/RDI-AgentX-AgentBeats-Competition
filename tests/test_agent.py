@@ -101,7 +101,7 @@ class TestAgentRun:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             messages=["test"],
         )
@@ -117,7 +117,7 @@ class TestAgentRun:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             messages=["Test message"],
         )
@@ -160,7 +160,7 @@ class TestAgentRun:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             messages=[],
         )
@@ -176,7 +176,7 @@ class TestAgentRun:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             messages=["Message 1", "Message 2", "Message 3"],
         )
@@ -196,14 +196,14 @@ class TestAgentFreshState:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request1 = EvalRequest(
+        _request1 = EvalRequest(
             agent_url="http://localhost:9009",
             messages=["First evaluation"],
             task_id="task-1",
         )
 
         # When: We run a second evaluation
-        request2 = EvalRequest(
+        _request2 = EvalRequest(
             agent_url="http://localhost:9009",
             messages=["Second evaluation"],
             task_id="task-2",
@@ -220,7 +220,7 @@ class TestAgentFreshState:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             task_id="unique-namespace-123",
         )
@@ -266,7 +266,7 @@ class TestAgentOrchestration:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://localhost:9009",
             task_id="propagate-123",
         )
@@ -432,7 +432,7 @@ class TestAgentErrorHandling:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request = EvalRequest(
+        _request = EvalRequest(
             agent_url="http://invalid-url-does-not-exist:99999",
             messages=["test"],
         )
@@ -478,11 +478,11 @@ class TestAgentConcurrency:
         from agentbeats.agent import Agent, EvalRequest
 
         agent = Agent()
-        request1 = EvalRequest(
+        _request1 = EvalRequest(
             agent_url="http://localhost:9009",
             task_id="concurrent-1",
         )
-        request2 = EvalRequest(
+        _request2 = EvalRequest(
             agent_url="http://localhost:9010",
             task_id="concurrent-2",
         )

@@ -1,10 +1,13 @@
 """Messenger module for A2A agent communication and trace capture."""
 
+import logging
 from datetime import UTC, datetime
 
 from a2a.client import Client, ClientFactory, create_text_message_object
 from a2a.types import TaskState
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 
 class TraceData(BaseModel):
@@ -122,9 +125,9 @@ class Messenger:
             if close_method is not None and callable(close_method):
                 try:
                     await close_method()  # type: ignore[misc]
-                except Exception:
-                    # Ignore errors during cleanup
-                    pass
+                except Exception as e:
+                    # Log errors during cleanup but don't propagate
+                    logger.debug(f"Error closing client: {e}")
 
         # Clear the client cache
         self._clients.clear()

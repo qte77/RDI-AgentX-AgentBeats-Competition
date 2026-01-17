@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
@@ -12,6 +13,8 @@ from agentbeats.evals.latency import LatencyEvaluator
 from agentbeats.evals.llm_judge import LLMJudge
 from agentbeats.evals.text_metrics import TextMetrics
 from agentbeats.messenger import Messenger, TraceData
+
+logger = logging.getLogger(__name__)
 
 
 class TaskStatus(BaseModel):
@@ -83,9 +86,9 @@ class Executor:
                 for i, message in enumerate(messages):
                     try:
                         await messenger.talk_to_agent(agent_url, message)
-                    except Exception:
-                        # Continue with other messages even if one fails
-                        pass
+                    except Exception as e:
+                        # Log error but continue with other messages
+                        logger.warning(f"Failed to send message {i + 1}/{len(messages)} to {agent_url}: {e}")
 
                     # Update progress
                     progress = (i + 1) / (len(messages) + 3)  # Account for eval steps
